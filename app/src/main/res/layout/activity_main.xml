@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    tools:context=".mvp.main.MainActivity">
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <RadioButton
+            android:id="@+id/rb1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="常工电子电控" />
+
+        <RadioButton
+            android:id="@+id/rb2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="山东科大电子电控" />
+
+        <RadioButton
+            android:id="@+id/rb3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="开普电子电控" />
+
+        <RadioButton
+            android:id="@+id/rb4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="开普电控东苑" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/xqTV"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:hint="校区"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/ldTV"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:hint="楼栋"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/lcTV"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:hint="楼层"
+        android:visibility="gone"/>
+
+    <EditText
+        android:id="@+id/roomET"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:hint="房间号"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/elecTV"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:hint="查询电费"
+        android:visibility="gone" />
+
+</LinearLayout>
