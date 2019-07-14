@@ -1,9 +1,11 @@
 package com.fafu.app.dfb.mvp.main;
 
+import android.content.Intent;
 import android.util.Log;
 
 import com.fafu.app.dfb.data.DFInfo;
 import com.fafu.app.dfb.mvp.base.BasePresenter;
+import com.fafu.app.dfb.mvp.login.LoginActivity;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 
 public class MainPresenter extends BasePresenter<MainContract.View, MainContract.Model>
         implements MainContract.Presenter {
@@ -30,17 +33,18 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     private final Map<String, String> postDataMap = new HashMap<>();
 
     MainPresenter(MainContract.View view) {
-        mView = view;
-        mModel = new MainModel(mView.getContext());
+        super(view, new MainModel(view.getContext()));
         Disposable d = mModel.initCookie()
                 .doOnSubscribe(disposable -> mView.showLoading())
+                .doFinally(() -> mView.hideLoading())
                 .subscribe(s -> {
                     if (s.contains("<title>登录</title>")) {
-                        Log.d(TAG, "登录态失效");
+                        mView.showMessage("登录态失效，请重新登录");
+                        mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
+                        mView.killSelf();
                     } else {
                         Log.d(TAG, "InitCookie Successful");
                     }
-                    mView.hideLoading();
                 }, this::showError);
         dkInfos = mModel.getInfoFromJson();
         initPostDataMap();
@@ -62,7 +66,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     @Override
     public void onDKSelect(int option) {
         initPostDataMap();
-        mView.clearViewData();
+        mView.initViewData();
         Optional<DFInfo> o = dkInfos.stream()
                 .filter(info -> info.getId().equals(aids[option-1]))
                 .findFirst();
@@ -163,7 +167,12 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .subscribe(s -> {
                     Log.d(TAG, s);
-                    mView.setElecText(s);
+                    if (s.contains("无法")) {
+                        mView.showMessage(s + "，请检查信息是否正确");
+                    } else {
+                        mView.setElecText(s);
+                        mView.showPayView();
+                    }
                     mView.hideLoading();
                 }, this::showError);
         mCompDisposable.add(d);
@@ -172,7 +181,6 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     private void showError(Throwable throwable) {
         throwable.printStackTrace();
         mView.showMessage(throwable.getMessage());
-        mView.hideLoading();
     }
 
     private List<String> getNames(DFInfo info) {
@@ -187,9 +195,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
         try {
             price = String.valueOf((Integer.valueOf(price) * 100));
             Disposable d = mModel.elecPay(postDataMap, price)
-                    .subscribe(s -> {
-                        mView.showMessage(s);
-                    }, this::showError);
+                    .subscribe(s -> mView.showMessage(s), this::showError);
             mCompDisposable.add(d);
         } catch (Exception e) {
             mView.showMessage("请输入正确的金额");

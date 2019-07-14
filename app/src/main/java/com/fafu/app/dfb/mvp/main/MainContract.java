@@ -22,7 +22,9 @@ class MainContract {
 
         void showElecCheckView();
 
-        void clearViewData();
+        void showPayView();
+
+       void initViewData();
 
         EditText getPriceTv();
     }

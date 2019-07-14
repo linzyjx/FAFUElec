@@ -43,6 +43,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
                     "0", "1"
             ).execute().body();
             emitter.onNext(responseBody.string());
+            emitter.onComplete();
         });
     }
 
@@ -50,7 +51,8 @@ public class MainModel extends BaseModel implements MainContract.Model {
     public Observable<String> queryAppInfo(String aid) {
         return RxJavaUtils.create(emitter -> {
             ResponseBody responseBody = service.query(
-                    "{ \"query_appinfo\": { \"aid\": \"" + aid+ "\", \"account\": \"88988\" } }",
+                    "{ \"query_appinfo\": { \"aid\": \"" + aid+ "\", \"account\": \"" +
+                            SPUtils.getString("account") + "\" } }",
                     "synjones.onecard.query.appinfo",
                     "true"
             ).execute().body();
@@ -60,21 +62,20 @@ public class MainModel extends BaseModel implements MainContract.Model {
                     .getJSONObject("appinfo")
                     .getString("support");
             emitter.onNext(support);
+            emitter.onComplete();
         });
     }
 
     @Override
     public Observable<String> queryDetail(String aid, String area, String building, String floor) {
         return RxJavaUtils.create(emitter -> {
-
             ResponseBody responseBody = service.query(
-                    "{ \"query_appinfo\": { \"aid\": \"" + aid+ "\", \"account\": \"88988\" } }",
+                    "{ \"query_appinfo\": { \"aid\": \"" + aid+ "\", \"account\": \"" + SPUtils.getString("account") + "\" } }",
                     "synjones.onecard.query.appinfo",
                     "true"
             ).execute().body();
             emitter.onNext(responseBody.string());
-
-
+            emitter.onComplete();
         });
     }
 
@@ -83,7 +84,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
         return RxJavaUtils.create( emitter -> {
             ResponseBody responseBody = service.query(
                     "{ \"query_elec_roominfo\": { \"aid\":\"" + dataMap.get("aid") + "\", " +
-                            "\"account\": \"88988\",\"room\": { \"roomid\": \"" + dataMap.get("room") +
+                            "\"account\": \"" + SPUtils.getString("account") + "\",\"room\": { \"roomid\": \"" + dataMap.get("room") +
                             "\", \"room\": \"" + dataMap.get("room") + "\" },  \"floor\": { \"floorid\": \"" +
                             dataMap.get("floorid") + "\", \"floor\": \"" + dataMap.get("floor") +
                             "\" }, \"area\": { \"area\": \"" + dataMap.get("areaid") + "\", \"areaname\": \"" +
@@ -97,6 +98,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
                     .getJSONObject("query_elec_roominfo")
                     .getString("errmsg");
             emitter.onNext(msg);
+            emitter.onComplete();
         });
     }
 
@@ -105,7 +107,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
         return RxJavaUtils.create( emitter -> {
             ResponseBody responseBody = service.elecPay(
                     "http://cardapp.fafu.edu.cn:8088/PPage/ComePage",
-                    "###", "1", dataMap.get("aid"), "88988",
+                    "###", "1", dataMap.get("aid"),  SPUtils.getString("account") ,
                     price, dataMap.get("roomid"), dataMap.get("room"), dataMap.get("floorid"),
                     dataMap.get("floor"), dataMap.get("buildingid"), dataMap.get("building"),
                     dataMap.get("areaid"), dataMap.get("areaname"), "true"
@@ -115,6 +117,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
                     .getJSONObject("pay_elec_gdc")
                     .getString("errmsg");
             emitter.onNext(msg);
+            emitter.onComplete();
         });
     }
 

@@ -12,8 +12,13 @@ import io.reactivex.disposables.Disposable;
 public class LoginPresenter extends BasePresenter<LoginContract.View, LoginContract.Model> implements LoginContract.Presenter {
 
     LoginPresenter(LoginContract.View view) {
-        mView = view;
-        mModel = new LoginModel();
+        super(view, new LoginModel());
+        UserMe user = mModel.getUserMe();
+        if (user != null) {
+            mView.setSnoEtText(user.getSno());
+            mView.setPasswordText(user.getPassword());
+        }
+        verify();
     }
 
     @Override
@@ -30,12 +35,14 @@ public class LoginPresenter extends BasePresenter<LoginContract.View, LoginContr
         String verify = mView.getVerifyEditable().toString();
         Disposable d = mModel.login(sno, password, verify)
                 .doOnSubscribe( disposable -> mView.showLoading())
+                .doFinally(() -> mView.hideLoading())
                 .subscribe(s -> {
                     JSONObject jo = JSONObject.parseObject(s);
                     if (jo.getBoolean("IsSucceed")) {
                         mView.showMessage("登录成功");
-                        JSONObject obj2 = jo.getJSONObject("Obj2");
                         UserMe user = new UserMe();
+                        user.setAccount(jo.getString("Obj"));
+                        JSONObject obj2 = jo.getJSONObject("Obj2");
                         user.setSno(obj2.getString("SNO"));
                         user.setName(obj2.getString("NAME"));
                         user.setPassword(password);
@@ -49,8 +56,11 @@ public class LoginPresenter extends BasePresenter<LoginContract.View, LoginContr
                         }
                         verify();
                     }
-                    mView.hideLoading();
-                }, this::onError);
+                }, throwable -> {
+                    onError(throwable);
+                    verify();
+                });
         mCompDisposable.add(d);
     }
+
 }

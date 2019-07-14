@@ -1,3 +1,14 @@
 <resources>
-    <string name="app_name">电费宝</string>
+    <string name="app_name">FAFU电宝</string>
+    <string name="aid1">常工电子电控</string>
+    <string name="aid2">山东科大电子电控</string>
+    <string name="aid3">开普电子电控</string>
+    <string name="aid4">开普电控东苑</string>
+    <string name="choose_xq">点击选择校区</string>
+    <string name="choose_ld">点击选择楼栋</string>
+    <string name="choose_lc">点击选择楼层</string>
+    <string name="input_room">输入房间号</string>
+    <string name="query_elec">点击查询电费</string>
+    <string name="input_price">输入充值金额</string>
+    <string name="confirm">确认缴费</string>
 </resources>

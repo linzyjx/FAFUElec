@@ -8,7 +8,7 @@ import android.webkit.WebView;
 import com.fafu.app.dfb.util.CookieUtils;
 import com.fafu.app.dfb.util.SPUtils;
 
-public class DFBao extends Application {
+public class FAFUElec extends Application {
 
     @SuppressLint("StaticFieldLeak")
     private static Context context;
@@ -16,12 +16,6 @@ public class DFBao extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        SPUtils.init(this);
-        CookieUtils.clearCookie();
-        if (!SPUtils.contain("User-Agent")) {
-            String agent = new WebView(this).getSettings().getUserAgentString();
-            SPUtils.putString("User-Agent", agent);
-        }
         context = getApplicationContext();
     }
 

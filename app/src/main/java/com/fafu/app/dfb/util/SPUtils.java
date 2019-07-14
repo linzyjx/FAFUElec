@@ -2,6 +2,7 @@ package com.fafu.app.dfb.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.webkit.WebView;
 
 import java.util.Set;
 
@@ -11,7 +12,7 @@ public class SPUtils {
 
     public static void init(Context context) {
         if (context != null && sp == null) {
-            sp = context.getSharedPreferences("xfb_settings", Context.MODE_PRIVATE);
+            sp = context.getSharedPreferences("FAFU_Elec", Context.MODE_PRIVATE);
         }
     }
 

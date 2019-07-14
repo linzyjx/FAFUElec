@@ -60,6 +60,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
         elecTv.setOnClickListener(this);
         payBtn.setOnClickListener(this);
 
+
         xqOpv =
                 new OptionsPickerBuilder(this, (options1, options2, options3, v) -> {
                     mPresenter.onXQSelect(xqData.get(options1));
@@ -99,6 +100,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
 
         RadioGroup rg = findViewById(R.id.radioGroup);
         rg.setOnCheckedChangeListener(this);
+        initViewData();
         mPresenter = new MainPresenter(this);
     }
 
@@ -137,7 +139,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     }
 
     @Override
-    public void clearViewData() {
+    public void initViewData() {
         xqTv.setVisibility(View.GONE);
         xqTv.setText("");
         ldTv.setVisibility(View.GONE);
@@ -173,8 +175,6 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 break;
             case R.id.elecTV:
                 mPresenter.checkElec(roomEt.getText().toString());
-                priceEt.setVisibility(View.VISIBLE);
-                payBtn.setVisibility(View.VISIBLE);
                 break;
             case R.id.payBtn:
                 mPresenter.pay();
@@ -185,6 +185,12 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     @Override
     public void showLoading() {
         progress.show();
+    }
+
+    @Override
+    public void showPayView() {
+        priceEt.setVisibility(View.VISIBLE);
+        payBtn.setVisibility(View.VISIBLE);
     }
 
     @Override

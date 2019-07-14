@@ -10,6 +10,8 @@ public class UserMe {
 
     private String rescouseType;
 
+    private String account;
+
     public String getSno() {
         return sno;
     }
@@ -40,5 +42,13 @@ public class UserMe {
 
     public void setRescouseType(String rescouseType) {
         this.rescouseType = rescouseType;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
     }
 }

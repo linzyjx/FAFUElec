@@ -3,10 +3,12 @@ package com.fafu.app.dfb.util;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.webkit.WebSettings;
 
-import com.fafu.app.dfb.DFBao;
+import com.fafu.app.dfb.FAFUElec;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -20,17 +22,42 @@ public class StringUtils {
     @NeedsPermission(Manifest.permission.READ_PHONE_STATE)
     public static String imei() {
         String str;
-        TelephonyManager telephonyManager = (TelephonyManager) DFBao.getContext().getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager telephonyManager = (TelephonyManager) FAFUElec.getContext().getSystemService(Context.TELEPHONY_SERVICE);
         try {
             if (telephonyManager.getDeviceId() != null) {
                 str = telephonyManager.getDeviceId();
             } else {
-                str = Settings.Secure.getString(DFBao.getContext().getApplicationContext().getContentResolver(), "android_id");
+                str = Settings.Secure.getString(FAFUElec.getContext().getApplicationContext().getContentResolver(), "android_id");
             }
         } catch(Exception e) {
-            str = Settings.Secure.getString(DFBao.getContext().getApplicationContext().getContentResolver(), "android_id");
+            str = Settings.Secure.getString(FAFUElec.getContext().getApplicationContext().getContentResolver(), "android_id");
         }
         return md5(str);
+    }
+
+    @SuppressLint("ObsoleteSdkInt")
+    public static String getUserAgent() {
+        String userAgent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            try {
+                userAgent = WebSettings.getDefaultUserAgent(FAFUElec.getContext());
+            } catch (Exception e) {
+                userAgent = System.getProperty("http.agent");
+            }
+        } else {
+            userAgent = System.getProperty("http.agent");
+        }
+        if (userAgent == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, length = userAgent.length(); i < length; i++) {
+            char c = userAgent.charAt(i);
+            if (c <= '\u001f' || c >= '\u007f') {
+                sb.append(String.format("\\u%04x", (int) c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     private static String md5(String str) {

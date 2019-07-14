@@ -20,6 +20,9 @@ class LoginContract {
         Editable getPasswordEditable();
         Editable getVerifyEditable();
 
+        void setSnoEtText(String sno);
+        void setPasswordText(String password);
+
         /**
          * 设置验证码
          */
@@ -27,6 +30,8 @@ class LoginContract {
     }
 
     interface Model extends IModel {
+
+        UserMe getUserMe();
 
         /**
          * 获取验证码
@@ -36,7 +41,7 @@ class LoginContract {
         /**
          * 登录
          */
-        io.reactivex.Observable<String> login(String sno, String password, String verify);
+        Observable<String> login(String sno, String password, String verify);
 
         /**
          * 保存用户信息

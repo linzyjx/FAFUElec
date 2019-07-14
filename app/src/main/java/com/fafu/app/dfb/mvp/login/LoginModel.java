@@ -22,6 +22,18 @@ public class LoginModel extends BaseModel implements LoginContract.Model {
     private final LoginService service = RetrofitFactory.obtainService(LoginService.class, null);
     private boolean isInit = false;
 
+
+    @Override
+    public UserMe getUserMe() {
+        if (SPUtils.contain("sno") && SPUtils.contain("password")) {
+            UserMe user = new UserMe();
+            user.setSno(SPUtils.getString("sno"));
+            user.setPassword(SPUtils.getString("password"));
+            return user;
+        }
+        return null;
+    }
+
     @Override
     public Observable<Bitmap> verifyBitmap() {
         return RxJavaUtils.create( emitter -> {
@@ -57,6 +69,7 @@ public class LoginModel extends BaseModel implements LoginContract.Model {
 
     @Override
     public void save(UserMe user) {
+        SPUtils.putString("account", user.getAccount());
         SPUtils.putString("sno", user.getSno());
         SPUtils.putString("password", user.getPassword());
         SPUtils.putString("name", user.getName());

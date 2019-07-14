@@ -37,6 +37,16 @@ public class LoginActivity extends BaseActivity<LoginContract.Presenter> impleme
     }
 
     @Override
+    public void setSnoEtText(String sno) {
+        snoET.setText(sno);
+    }
+
+    @Override
+    public void setPasswordText(String password) {
+        passwordET.setText(password);
+    }
+
+    @Override
     public Editable getSNoEditable() {
         return snoET.getText();
     }
