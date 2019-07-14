@@ -10,7 +10,7 @@ public abstract class BasePresenter<V extends IView, M extends IModel> implement
 
     protected V mView;
     protected M mModel;
-    protected CompositeDisposable mCDisposable = new CompositeDisposable();
+    protected CompositeDisposable mCompDisposable = new CompositeDisposable();
 
     protected final String TAG  = this.getClass().getSimpleName();
 
@@ -25,8 +25,15 @@ public abstract class BasePresenter<V extends IView, M extends IModel> implement
             mModel.onDestroy();
             mModel = null;
         }
-        mCDisposable.dispose();
-        mCDisposable = null;
+        mCompDisposable.dispose();
+        mCompDisposable = null;
         mView = null;
+    }
+
+
+    protected void onError(Throwable throwable) {
+        mView.showMessage(throwable.getMessage());
+        throwable.printStackTrace();
+        mView.hideLoading();
     }
 }

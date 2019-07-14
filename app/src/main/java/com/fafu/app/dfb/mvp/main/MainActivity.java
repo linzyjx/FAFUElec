@@ -44,7 +44,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        progress = new ProgressDialog(this);
+        progress = new ProgressDialog(this, "加载中");
 
         xqTv = findViewById(R.id.xqTV);
         xqTv.setOnClickListener(this);
@@ -184,7 +184,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
 
     @Override
     public void showLoading() {
-        progress.show("加载中");
+        progress.show();
     }
 
     @Override

@@ -27,9 +27,9 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     private DFInfo ldInfos;
     private DFInfo lcInfos;
 
-    private Map<String, String> postDataMap = new HashMap<>();
+    private final Map<String, String> postDataMap = new HashMap<>();
 
-    public MainPresenter(MainContract.View view) {
+    MainPresenter(MainContract.View view) {
         mView = view;
         mModel = new MainModel(mView.getContext());
         Disposable d = mModel.initCookie()
@@ -44,7 +44,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                 }, this::showError);
         dkInfos = mModel.getInfoFromJson();
         initPostDataMap();
-        mCDisposable.add(d);
+        mCompDisposable.add(d);
     }
 
     private void initPostDataMap() {
@@ -166,7 +166,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                     mView.setElecText(s);
                     mView.hideLoading();
                 }, this::showError);
-        mCDisposable.add(d);
+        mCompDisposable.add(d);
     }
 
     private void showError(Throwable throwable) {
@@ -190,7 +190,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                     .subscribe(s -> {
                         mView.showMessage(s);
                     }, this::showError);
-            mCDisposable.add(d);
+            mCompDisposable.add(d);
         } catch (Exception e) {
             mView.showMessage("请输入正确的金额");
         }

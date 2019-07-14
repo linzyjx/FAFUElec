@@ -1,7 +1,5 @@
 package com.fafu.app.dfb.util;
 
-import java.util.Set;
-
 public class CookieUtils {
     public static String getCookie() {
         return getACookie("ASP.NET_SessionId") +

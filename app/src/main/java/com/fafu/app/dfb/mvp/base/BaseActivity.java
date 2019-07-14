@@ -10,29 +10,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.fafu.app.dfb.mvp.base.i.IPresenter;
 import com.fafu.app.dfb.mvp.base.i.IView;
 
-import org.jetbrains.annotations.NotNull;
-
 public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivity implements IView {
 
     protected P mPresenter;
 
-    @NotNull
     @Override
     public Context getContext() {
         return getApplicationContext();
     }
 
     @Override
-    public void showMessage(@NotNull String msg) {
+    public void showMessage(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void openActivity(@NotNull Intent intent) {
+    public void openActivity(Intent intent) {
         startActivity(intent);
     }
 
-    @NotNull
     @Override
     public Activity getActivity() {
         return this;
@@ -51,4 +47,5 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
             mPresenter = null;
         }
     }
+
 }

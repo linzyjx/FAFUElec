@@ -11,18 +11,16 @@ import com.fafu.app.dfb.R;
 
 public class ProgressDialog extends Dialog {
 
-    private TextView textView;
-
-    public ProgressDialog(@NonNull Context context) {
+    public ProgressDialog(@NonNull Context context, String text) {
         super(context, R.style.styleProgressDialog);
         setContentView(R.layout.dialog_progress);
         setCanceledOnTouchOutside(false);
         setOnKeyListener((dialog, keyCode, event) -> keyCode == KeyEvent.KEYCODE_BACK);
-        textView = findViewById(R.id.dialogProgressText);
+        TextView textView = findViewById(R.id.dialogProgressText);
+        textView.setText(text);
     }
 
-    public void show(String text) {
-        textView.setText(text);
+    public void show() {
         super.show();
     }
 }

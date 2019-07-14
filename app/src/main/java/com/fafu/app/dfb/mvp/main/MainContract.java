@@ -12,7 +12,8 @@ import java.util.Map;
 
 import io.reactivex.Observable;
 
-public class MainContract {
+class MainContract {
+
     interface View extends IView {
 
         void setElecText(String text);

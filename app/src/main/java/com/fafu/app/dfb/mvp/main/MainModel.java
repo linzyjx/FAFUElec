@@ -24,8 +24,8 @@ import okhttp3.ResponseBody;
 
 public class MainModel extends BaseModel implements MainContract.Model {
 
-    private MainService service = RetrofitFactory.INSTANCE.obtainService(MainService.class, null);
-    private Context context;
+    private final MainService service = RetrofitFactory.obtainService(MainService.class, null);
+    private final Context context;
 
     public MainModel(Context context) {
         this.context = context;
