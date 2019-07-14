@@ -2,60 +2,81 @@ package com.fafu.app.dfb.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+
+import androidx.collection.SimpleArrayMap;
 
 import java.util.Set;
 
 public class SPUtils {
 
-    private static SharedPreferences sp;
+    private SharedPreferences sp;
+
+    private static SimpleArrayMap<String, SPUtils> map = new SimpleArrayMap<>();
 
     public static void init(Context context) {
-        if (context != null && sp == null) {
-            sp = context.getSharedPreferences("FAFU_Elec", Context.MODE_PRIVATE);
+        if (context != null && map.isEmpty()) {
+            map.put("UserInfo", new SPUtils(context, "UserInfo"));
+            map.put("Cookie", new SPUtils(context, "Cookie"));
         }
     }
 
-    public static void putString(String key, String value) {
+    public static SPUtils get(String fileName) {
+        if (!map.containsKey(fileName)) {
+            throw new Resources.NotFoundException("Can not find the SharedPreferences named " + fileName);
+        }
+        return map.get(fileName);
+    }
+
+    private SPUtils(Context context, String fileName) {
+        sp = context.getSharedPreferences(fileName, Context.MODE_PRIVATE);
+    }
+    
+    public void putString(String key, String value) {
         SharedPreferences.Editor edit = sp.edit();
         edit.putString(key, value);
         edit.apply();
     }
 
-    public static void putStringSet(String key, Set<String> value) {
+    public void putStringSet(String key, Set<String> value) {
         SharedPreferences.Editor edit = sp.edit();
         edit.putStringSet(key, value);
         edit.apply();
     }
 
-    public static void putInt(String key, Integer value) {
+    public void putInt(String key, Integer value) {
         SharedPreferences.Editor edit = sp.edit();
         edit.putInt(key, value);
         edit.apply();
     }
 
-    public static void putBoolean(String key, boolean value) {
+    public void putBoolean(String key, boolean value) {
         SharedPreferences.Editor edit = sp.edit();
         edit.putBoolean(key, value);
         edit.apply();
     }
 
-    public static Set<String> getStringSet(String key, Set<String> defaultValue) {
+    public Set<String> getStringSet(String key, Set<String> defaultValue) {
         return sp.getStringSet(key, defaultValue);
     }
 
-    public static String getString(String key) {
+    public String getString(String key) {
         return sp.getString(key, "");
     }
 
-    public static boolean getBoolean(String key) {
+    public boolean getBoolean(String key) {
         return sp.getBoolean(key, false);
     }
 
-    public static void remove(String key) {
+    public void remove(String key) {
         sp.edit().remove(key).apply();
     }
 
-    public static boolean contain(String key) {
+    public boolean contain(String key) {
         return sp.contains(key);
+    }
+
+    public void clear() {
+        sp.edit().clear().apply();
     }
 }

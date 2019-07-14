@@ -30,16 +30,7 @@ public class SplashPresenter extends BasePresenter<SplashContract.View, IModel>
         Observable
                 .<Boolean>create(emitter -> {
                     SPUtils.init(mView.getContext());
-                    Log.d("SplashActivity", "User-Agent ==> " + StringUtils.getUserAgent());
-                    boolean b = SPUtils.contain("sourcetypeticket") && SPUtils.contain("account");
-                    if (!b) {
-                        CookieUtils.clearCookie();
-                    }
-                    if (!SPUtils.contain("User-Agent")) {
-                        String agent = StringUtils.getUserAgent();
-                        SPUtils.putString("User-Agent", agent);
-                    }
-                    emitter.onNext(b);
+                    emitter.onNext(jumpJudge());
                     emitter.onComplete();
                 }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -55,5 +46,18 @@ public class SplashPresenter extends BasePresenter<SplashContract.View, IModel>
                     mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
                     mView.killSelf();
                 });
+    }
+
+    private boolean jumpJudge() {
+        boolean b = SPUtils.get("Cookie").contain("sourcetypeticket") && SPUtils.get("UserInfo").contain("account");
+        if (!b) {
+            SPUtils.get("Cookie").clear();
+            SPUtils.get("UserInfo").clear();
+            Log.d("SplashActivity", "IMEI ==> " + StringUtils.imei());
+            Log.d("SplashActivity", "User-Agent ==> " + StringUtils.getUserAgent());
+            SPUtils.get("Cookie").putString("IMEI", StringUtils.imei());
+            SPUtils.get("Cookie").putString("User-Agent", StringUtils.getUserAgent());
+        }
+        return b;
     }
 }

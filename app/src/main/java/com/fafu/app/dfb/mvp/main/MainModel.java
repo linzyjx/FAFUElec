@@ -27,18 +27,18 @@ public class MainModel extends BaseModel implements MainContract.Model {
     private final MainService service = RetrofitFactory.obtainService(MainService.class, null);
     private final Context context;
 
-    public MainModel(Context context) {
+    MainModel(Context context) {
         this.context = context;
     }
 
     @Override
     public Observable<String> initCookie() {
         return RxJavaUtils.create(emitter -> {
-            service.default2(SPUtils.getString("RescouseType")).execute();
+            service.default2(SPUtils.get("Cookie").getString("RescouseType")).execute();
             ResponseBody responseBody = service.page(
                     "31", "3", "2", "", "electricity",
                     URLEncoder.encode("交电费", "gbk"),
-                    SPUtils.getString("sourcetypeticket"),
+                    SPUtils.get("Cookie").getString("sourcetypeticket"),
                     StringUtils.imei(),
                     "0", "1"
             ).execute().body();
@@ -51,8 +51,8 @@ public class MainModel extends BaseModel implements MainContract.Model {
     public Observable<String> queryAppInfo(String aid) {
         return RxJavaUtils.create(emitter -> {
             ResponseBody responseBody = service.query(
-                    "{ \"query_appinfo\": { \"aid\": \"" + aid+ "\", \"account\": \"" +
-                            SPUtils.getString("account") + "\" } }",
+                    "{ \"query_appinfo\": { \"aid\": \"" + aid + "\", \"account\": \"" +
+                            SPUtils.get("UserInfo").getString("account") + "\" } }",
                     "synjones.onecard.query.appinfo",
                     "true"
             ).execute().body();
@@ -70,7 +70,12 @@ public class MainModel extends BaseModel implements MainContract.Model {
     public Observable<String> queryDetail(String aid, String area, String building, String floor) {
         return RxJavaUtils.create(emitter -> {
             ResponseBody responseBody = service.query(
-                    "{ \"query_appinfo\": { \"aid\": \"" + aid+ "\", \"account\": \"" + SPUtils.getString("account") + "\" } }",
+                    String.format(
+                            "{ \"query_appinfo\": { " +
+                                    "\"aid\": \"" + aid + "\", " +
+                                    "\"account\": \"%s\" } }",
+                            SPUtils.get("UserInfo").getString("account")
+                    ),
                     "synjones.onecard.query.appinfo",
                     "true"
             ).execute().body();
@@ -81,15 +86,23 @@ public class MainModel extends BaseModel implements MainContract.Model {
 
     @Override
     public Observable<String> queryElec(Map<String, String> dataMap) {
-        return RxJavaUtils.create( emitter -> {
+        return RxJavaUtils.create(emitter -> {
             ResponseBody responseBody = service.query(
-                    "{ \"query_elec_roominfo\": { \"aid\":\"" + dataMap.get("aid") + "\", " +
-                            "\"account\": \"" + SPUtils.getString("account") + "\",\"room\": { \"roomid\": \"" + dataMap.get("room") +
-                            "\", \"room\": \"" + dataMap.get("room") + "\" },  \"floor\": { \"floorid\": \"" +
-                            dataMap.get("floorid") + "\", \"floor\": \"" + dataMap.get("floor") +
-                            "\" }, \"area\": { \"area\": \"" + dataMap.get("areaid") + "\", \"areaname\": \"" +
-                            dataMap.get("areaname") + "\" }, \"building\": { \"buildingid\": \"" +
-                            dataMap.get("buildingid") + "\", \"building\": \"" + dataMap.get("building") + "\" } } }",
+                    String.format(
+                            "{ \"query_elec_roominfo\": { " +
+                                    "\"aid\":\"%s\", " +
+                                    "\"account\": \"%s\"," +
+                                    "\"room\": { \"roomid\": \"%s\", \"room\": \"%s\" },  " +
+                                    "\"floor\": { \"floorid\": \"%s\", \"floor\": \"%s\" }, " +
+                                    "\"area\": { \"area\": \"%s\", \"areaname\": \"%s\" }, " +
+                                    "\"building\": { \"buildingid\": \"%s\", \"building\": \"%s\" } } }",
+                            dataMap.get("aid"),
+                            SPUtils.get("UserInfo").getString("account"),
+                            dataMap.get("room"), dataMap.get("room"),
+                            dataMap.get("floorid"), dataMap.get("floor"),
+                            dataMap.get("areaname"), dataMap.get("areaid"),
+                            dataMap.get("buildingid"), dataMap.get("building")
+                    ),
                     "synjones.onecard.query.elec.roominfo",
                     "true"
             ).execute().body();
@@ -104,11 +117,12 @@ public class MainModel extends BaseModel implements MainContract.Model {
 
     @Override
     public Observable<String> elecPay(Map<String, String> dataMap, String price) {
-        return RxJavaUtils.create( emitter -> {
+        return RxJavaUtils.create(emitter -> {
             ResponseBody responseBody = service.elecPay(
                     "http://cardapp.fafu.edu.cn:8088/PPage/ComePage",
-                    "###", "1", dataMap.get("aid"),  SPUtils.getString("account") ,
-                    price, dataMap.get("roomid"), dataMap.get("room"), dataMap.get("floorid"),
+                    "###", "1", dataMap.get("aid"),
+                    SPUtils.get("UserInfo").getString("account"), price,
+                    dataMap.get("roomid"), dataMap.get("room"), dataMap.get("floorid"),
                     dataMap.get("floor"), dataMap.get("buildingid"), dataMap.get("building"),
                     dataMap.get("areaid"), dataMap.get("areaname"), "true"
             ).execute().body();
@@ -136,6 +150,23 @@ public class MainModel extends BaseModel implements MainContract.Model {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public Observable<Double> queryBalance() {
+        return RxJavaUtils.create(emitter -> {
+            ResponseBody responseBody = service.queryBalance(
+                    "true"
+            ).execute().body();
+            JSONObject msg = JSONObject.parseObject(responseBody.string())
+                    .getJSONObject("Msg")
+                    .getJSONObject("query_card")
+                    .getJSONArray("card")
+                    .getJSONObject(0);
+            Double total = (msg.getIntValue("db_balance") + msg.getIntValue("unsettle_amount")) / 100.0;
+            emitter.onNext(total);
+            emitter.onComplete();
+        });
     }
 
 

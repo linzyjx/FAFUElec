@@ -1,0 +1,24 @@
+<?xml version="1" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+
+    <path
+        android:fillColor="#000000"
+        android:pathData="M911 607c-21-4-46 8-50
+29-42 174-195 293-373
+293-212
+0-386-174-386-386s174-386
+386-386c97 0 195 38 263
+106h-178c-21 0-42 16-42 42 0
+21 16 42 42 42h263c21 0
+42-16
+42-42v-263c0-21-16-42-42-42-21
+0-42 16-42
+42v148c-84-76-195-118-310-118-259
+0-471 212-471 471s212 471 471
+471c216 0 403-148 458-356
+4-21-8-42-29-50z" />
+</vector>

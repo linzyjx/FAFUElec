@@ -39,7 +39,16 @@ public interface MainService {
 
 
     /**
-     * 查询信息
+     * 查询余额
+     */
+    @POST("/User/GetCardInfoByAccountNoParm")
+    @FormUrlEncoded
+    Call<ResponseBody> queryBalance(
+            @Field("json") String json
+    );
+
+    /**
+     * 查询电费信息
      */
     @POST("/Tsm/TsmCommon")
     @FormUrlEncoded
@@ -49,6 +58,9 @@ public interface MainService {
             @Field("json") String json
     );
 
+    /**
+     * 充值电费
+     */
     @POST("/Tsm/Elec_Pay")
     @FormUrlEncoded
     Call<ResponseBody> elecPay(

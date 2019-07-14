@@ -5,97 +5,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
+    android:paddingTop="32dp"
     tools:context=".mvp.main.MainActivity">
 
-    <RadioGroup
-        android:id="@+id/radioGroup"
-        android:layout_marginTop="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+    <include layout="@layout/include_main_balance" />
 
-        <RadioButton
-            android:id="@+id/rb1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/aid1" />
-
-        <RadioButton
-            android:id="@+id/rb2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/aid2" />
-
-        <RadioButton
-            android:id="@+id/rb3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/aid3" />
-
-        <RadioButton
-            android:id="@+id/rb4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/aid4" />
-    </RadioGroup>
-
-    <TextView
-        android:id="@+id/xqTV"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:layout_marginTop="4dp"
-        android:hint="@string/choose_xq"/>
-
-    <TextView
-        android:id="@+id/ldTV"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:layout_marginTop="4dp"
-        android:hint="@string/choose_ld"/>
-
-    <TextView
-        android:id="@+id/lcTV"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:layout_marginTop="4dp"
-        android:hint="@string/choose_lc"/>
-
-    <EditText
-        android:id="@+id/roomET"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="4dp"
-        android:hint="@string/input_room"
-        android:gravity="center"/>
-
-    <TextView
-        android:id="@+id/elecTV"
-        android:layout_width="240dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="4dp"
-        android:hint="@string/query_elec"
-        android:gravity="center" />
-
-    <EditText
-        android:id="@+id/priceET"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="4dp"
-        android:hint="@string/input_price"
-        android:gravity="center"/>
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/payBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_marginTop="4dp"
-        android:text="@string/confirm"/>
+    <include layout="@layout/include_main_elec" />
 
 </LinearLayout>

@@ -22,13 +22,12 @@ public class LoginModel extends BaseModel implements LoginContract.Model {
     private final LoginService service = RetrofitFactory.obtainService(LoginService.class, null);
     private boolean isInit = false;
 
-
     @Override
     public UserMe getUserMe() {
-        if (SPUtils.contain("sno") && SPUtils.contain("password")) {
+        if (SPUtils.get("UserInfo").contain("sno") && SPUtils.get("UserInfo").contain("password")) {
             UserMe user = new UserMe();
-            user.setSno(SPUtils.getString("sno"));
-            user.setPassword(SPUtils.getString("password"));
+            user.setSno(SPUtils.get("UserInfo").getString("sno"));
+            user.setPassword(SPUtils.get("UserInfo").getString("password"));
             return user;
         }
         return null;
@@ -69,11 +68,11 @@ public class LoginModel extends BaseModel implements LoginContract.Model {
 
     @Override
     public void save(UserMe user) {
-        SPUtils.putString("account", user.getAccount());
-        SPUtils.putString("sno", user.getSno());
-        SPUtils.putString("password", user.getPassword());
-        SPUtils.putString("name", user.getName());
-        SPUtils.putString("RescouseType", user.getRescouseType());
+        SPUtils.get("UserInfo").putString("account", user.getAccount());
+        SPUtils.get("UserInfo").putString("sno", user.getSno());
+        SPUtils.get("UserInfo").putString("password", user.getPassword());
+        SPUtils.get("UserInfo").putString("name", user.getName());
+        SPUtils.get("Cookie").putString("RescouseType", user.getRescouseType());
     }
 
 }

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
@@ -27,9 +28,10 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     private TextView ldTv;
     private TextView lcTv;
 
-    private EditText roomEt;
+    private TextView balanceTv;
     private TextView elecTv;
     private EditText priceEt;
+    private EditText roomEt;
     private Button payBtn;
 
     private OptionsPickerView<String> xqOpv;
@@ -53,16 +55,20 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
         lcTv = findViewById(R.id.lcTV);
         lcTv.setOnClickListener(this);
 
+        balanceTv = findViewById(R.id.balanceTV);
         roomEt = findViewById(R.id.roomET);
         priceEt = findViewById(R.id.priceET);
         elecTv = findViewById(R.id.elecTV);
         payBtn = findViewById(R.id.payBtn);
         elecTv.setOnClickListener(this);
         payBtn.setOnClickListener(this);
+        ImageButton balanceBtn = findViewById(R.id.balanceBtn);
+        balanceBtn.setOnClickListener(this);
+        RadioGroup rg = findViewById(R.id.radioGroup);
+        rg.setOnCheckedChangeListener(this);
 
-
-        xqOpv =
-                new OptionsPickerBuilder(this, (options1, options2, options3, v) -> {
+        xqOpv = new OptionsPickerBuilder(this,
+                (options1, options2, options3, v) -> {
                     mPresenter.onXQSelect(xqData.get(options1));
                     xqTv.setText(xqData.get(options1));
                 })
@@ -73,8 +79,9 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 .setSelectOptions(0)
                 .setOutSideCancelable(false)
                 .build();
-        ldOpv =
-                new OptionsPickerBuilder(this, (options1, options2, options3, v) -> {
+
+        ldOpv = new OptionsPickerBuilder(this,
+                (options1, options2, options3, v) -> {
                     mPresenter.onLDSelect(ldData.get(options1));
                     ldTv.setText(ldData.get(options1));
                 })
@@ -85,8 +92,9 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 .setSelectOptions(0)
                 .setOutSideCancelable(false)
                 .build();
-        lcOpv =
-                new OptionsPickerBuilder(this, (options1, options2, options3, v) -> {
+
+        lcOpv = new OptionsPickerBuilder(this,
+                (options1, options2, options3, v) -> {
                     mPresenter.onLCSelect(lcData.get(options1));
                     lcTv.setText(lcData.get(options1));
                 })
@@ -98,10 +106,13 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 .setOutSideCancelable(false)
                 .build();
 
-        RadioGroup rg = findViewById(R.id.radioGroup);
-        rg.setOnCheckedChangeListener(this);
-        initViewData();
+        initViewVisibility();
         mPresenter = new MainPresenter(this);
+    }
+
+    @Override
+    public void setBalanceText(String text) {
+        balanceTv.setText(getString(R.string.balance, text));
     }
 
     public void setSelectorView(int i, List<String> list) {
@@ -139,7 +150,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     }
 
     @Override
-    public void initViewData() {
+    public void initViewVisibility() {
         xqTv.setVisibility(View.GONE);
         xqTv.setText("");
         ldTv.setVisibility(View.GONE);
@@ -174,10 +185,13 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 lcOpv.show();
                 break;
             case R.id.elecTV:
-                mPresenter.checkElec(roomEt.getText().toString());
+                mPresenter.checkElecFees(roomEt.getText().toString());
                 break;
             case R.id.payBtn:
                 mPresenter.pay();
+                break;
+            case R.id.balanceBtn:
+                mPresenter.balance();
                 break;
         }
     }
@@ -205,7 +219,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     }
 
     @Override
-    public EditText getPriceTv() {
+    public EditText getPriceET() {
         return priceEt;
     }
 }

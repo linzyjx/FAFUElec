@@ -20,19 +20,28 @@ class MainContract {
 
         void setSelectorView(int i, List<String> list);
 
+        void setBalanceText(String text);
+
         void showElecCheckView();
 
         void showPayView();
 
-       void initViewData();
+        void initViewVisibility();
 
-        EditText getPriceTv();
+        EditText getPriceET();
     }
 
     interface Presenter extends IPresenter {
         void onXQSelect(String name);
+
         void onLDSelect(String name);
+
         void onLCSelect(String name);
+
+        /**
+         * 查询余额
+         */
+        void balance();
 
         /**
          * 1 -> 常工电子电控,
@@ -42,7 +51,7 @@ class MainContract {
          */
         void onDKSelect(int option);
 
-        void checkElec(String room);
+        void checkElecFees(String room);
 
         void pay();
     }
@@ -65,6 +74,8 @@ class MainContract {
         Observable<String> queryDetail(String aid, String area, String building, String floor);
 
         List<DFInfo> getInfoFromJson();
+
+        Observable<Double> queryBalance();
 
         Observable<String> queryElec(Map<String, String> dataMap);
 

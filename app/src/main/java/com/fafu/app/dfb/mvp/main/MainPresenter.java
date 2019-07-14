@@ -1,5 +1,6 @@
 package com.fafu.app.dfb.mvp.main;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.util.Log;
 
@@ -11,12 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
 
 public class MainPresenter extends BasePresenter<MainContract.View, MainContract.Model>
         implements MainContract.Presenter {
@@ -25,16 +26,22 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     private final String[] aids = {"0030000000002501", "0030000000008001",
             "0030000000008101", "0030000000008102"};
 
-    private List<DFInfo> dkInfos;
     private DFInfo xqInfos;
     private DFInfo ldInfos;
     private DFInfo lcInfos;
 
+    private final List<DFInfo> dkInfos = mModel.getInfoFromJson();
     private final Map<String, String> postDataMap = new HashMap<>();
 
     MainPresenter(MainContract.View view) {
         super(view, new MainModel(view.getContext()));
-        Disposable d = mModel.initCookie()
+        onStart();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mCompDisposable.add(mModel.initCookie()
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .doFinally(() -> mView.hideLoading())
                 .subscribe(s -> {
@@ -43,12 +50,12 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                         mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
                         mView.killSelf();
                     } else {
+                        balance(false);
                         Log.d(TAG, "InitCookie Successful");
                     }
-                }, this::showError);
-        dkInfos = mModel.getInfoFromJson();
+                }, this::showError)
+        );
         initPostDataMap();
-        mCompDisposable.add(d);
     }
 
     private void initPostDataMap() {
@@ -66,7 +73,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     @Override
     public void onDKSelect(int option) {
         initPostDataMap();
-        mView.initViewData();
+        mView.initViewVisibility();
         Optional<DFInfo> o = dkInfos.stream()
                 .filter(info -> info.getId().equals(aids[option-1]))
                 .findFirst();
@@ -160,11 +167,34 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     }
 
     @Override
-    public void checkElec(String room) {
+    public void balance() {
+        balance(true);
+    }
+
+    @SuppressLint("DefaultLocale")
+    private void balance(boolean toast) {
+        int delay = toast ? 250 : 0;
+        mCompDisposable.add(mModel.queryBalance()
+                .delaySubscription(delay, TimeUnit.MILLISECONDS)
+                .doOnSubscribe(disposable -> mView.showLoading())
+                .doFinally(() -> mView.hideLoading())
+                .subscribe(balance -> {
+                    String t = String.format("%.2f", balance);
+                    mView.setBalanceText(t);
+                    if (toast) {
+                        mView.showMessage(String.format("当前账户余额：%s元", t));
+                    }
+                }, this::showError)
+        );
+    }
+
+    @Override
+    public void checkElecFees(String room) {
         postDataMap.put("room", room);
         postDataMap.put("roomid", room);
         Disposable d = mModel.queryElec(postDataMap)
                 .doOnSubscribe(disposable -> mView.showLoading())
+                .doFinally(() -> mView.hideLoading())
                 .subscribe(s -> {
                     Log.d(TAG, s);
                     if (s.contains("无法")) {
@@ -173,7 +203,6 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                         mView.setElecText(s);
                         mView.showPayView();
                     }
-                    mView.hideLoading();
                 }, this::showError);
         mCompDisposable.add(d);
     }
@@ -191,12 +220,15 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
 
     @Override
     public void pay() {
-        String price = mView.getPriceTv().getText().toString();
+        String price = mView.getPriceET().getText().toString();
         try {
             price = String.valueOf((Integer.valueOf(price) * 100));
-            Disposable d = mModel.elecPay(postDataMap, price)
-                    .subscribe(s -> mView.showMessage(s), this::showError);
-            mCompDisposable.add(d);
+            mCompDisposable.add(mModel.elecPay(postDataMap, price)
+                    .subscribe(s -> {
+                        mView.showMessage(s);
+                        balance(false);
+                    }, this::showError)
+            );
         } catch (Exception e) {
             mView.showMessage("请输入正确的金额");
         }

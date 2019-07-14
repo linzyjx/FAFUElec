@@ -10,7 +10,7 @@ public class CookieUtils {
     }
 
     private static String getACookie(String name) {
-        String value = SPUtils.getString(name);
+        String value = SPUtils.get("Cookie").getString(name);
         if (!value.isEmpty()) {
            return name + "=" + value + "; ";
         } else {
@@ -18,11 +18,4 @@ public class CookieUtils {
         }
     }
 
-    public static void clearCookie() {
-        SPUtils.remove("ASP.NET_SessionId");
-        SPUtils.remove("imeiticket");
-        SPUtils.remove("hallticket");
-        SPUtils.remove("username");
-        SPUtils.remove("sourcetypeticket");
-    }
 }
