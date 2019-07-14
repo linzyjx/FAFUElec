@@ -17,6 +17,7 @@ import com.fafu.app.dfb.mvp.main.MainActivity;
 import com.fafu.app.dfb.util.CookieUtils;
 import com.fafu.app.dfb.util.SPUtils;
 import com.fafu.app.dfb.util.StringUtils;
+import com.jaeger.library.StatusBarUtil;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;

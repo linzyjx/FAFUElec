@@ -2,7 +2,6 @@ package com.fafu.app.dfb.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.webkit.WebView;
 
 import java.util.Set;
 

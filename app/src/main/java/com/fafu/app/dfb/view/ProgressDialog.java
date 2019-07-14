@@ -12,7 +12,7 @@ import com.fafu.app.dfb.R;
 public class ProgressDialog extends Dialog {
 
     public ProgressDialog(@NonNull Context context, String text) {
-        super(context, R.style.styleProgressDialog);
+        super(context, R.style.ProgressDialog);
         setContentView(R.layout.dialog_progress);
         setCanceledOnTouchOutside(false);
         setOnKeyListener((dialog, keyCode, event) -> keyCode == KeyEvent.KEYCODE_BACK);
