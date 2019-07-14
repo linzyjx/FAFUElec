@@ -86,7 +86,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
                             "\"account\": \"88988\",\"room\": { \"roomid\": \"" + dataMap.get("room") +
                             "\", \"room\": \"" + dataMap.get("room") + "\" },  \"floor\": { \"floorid\": \"" +
                             dataMap.get("floorid") + "\", \"floor\": \"" + dataMap.get("floor") +
-                            "\" }, \"area\": { \"area\": \"" + dataMap.get("area") + "\", \"areaname\": \"" +
+                            "\" }, \"area\": { \"area\": \"" + dataMap.get("areaid") + "\", \"areaname\": \"" +
                             dataMap.get("areaname") + "\" }, \"building\": { \"buildingid\": \"" +
                             dataMap.get("buildingid") + "\", \"building\": \"" + dataMap.get("building") + "\" } } }",
                     "synjones.onecard.query.elec.roominfo",
@@ -95,6 +95,24 @@ public class MainModel extends BaseModel implements MainContract.Model {
             String msg = JSONObject.parseObject(responseBody.string())
                     .getJSONObject("Msg")
                     .getJSONObject("query_elec_roominfo")
+                    .getString("errmsg");
+            emitter.onNext(msg);
+        });
+    }
+
+    @Override
+    public Observable<String> elecPay(Map<String, String> dataMap, String price) {
+        return RxJavaUtils.create( emitter -> {
+            ResponseBody responseBody = service.elecPay(
+                    "http://cardapp.fafu.edu.cn:8088/PPage/ComePage",
+                    "###", "1", dataMap.get("aid"), "88988",
+                    price, dataMap.get("roomid"), dataMap.get("room"), dataMap.get("floorid"),
+                    dataMap.get("floor"), dataMap.get("buildingid"), dataMap.get("building"),
+                    dataMap.get("areaid"), dataMap.get("areaname"), "true"
+            ).execute().body();
+            String msg = JSONObject.parseObject(responseBody.string())
+                    .getJSONObject("Msg")
+                    .getJSONObject("pay_elec_gdc")
                     .getString("errmsg");
             emitter.onNext(msg);
         });
@@ -116,5 +134,6 @@ public class MainModel extends BaseModel implements MainContract.Model {
             return null;
         }
     }
+
 
 }

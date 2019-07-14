@@ -4,6 +4,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 public interface MainService {
@@ -45,6 +46,26 @@ public interface MainService {
     Call<ResponseBody> query(
             @Field("jsondata") String jsondata,
             @Field("funname") String funname,
+            @Field("json") String json
+    );
+
+    @POST("/Tsm/Elec_Pay")
+    @FormUrlEncoded
+    Call<ResponseBody> elecPay(
+            @Header("Referer") String referer,
+            @Field("acctype") String acceptype,
+            @Field("paytype") String paytype,
+            @Field("aid") String aid,
+            @Field("account") String account,
+            @Field("tran") String tran,
+            @Field("roomid") String roomid,
+            @Field("room") String room,
+            @Field("floorid") String floorid,
+            @Field("floor") String floor,
+            @Field("buildingid") String buildingid,
+            @Field("building") String building,
+            @Field("areaid") String areaid,
+            @Field("areaname") String areaname,
             @Field("json") String json
     );
 

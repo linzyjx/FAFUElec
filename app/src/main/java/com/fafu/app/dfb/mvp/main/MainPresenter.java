@@ -35,7 +35,11 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
         Disposable d = mModel.initCookie()
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .subscribe(s -> {
-                    Log.d(TAG, s);
+                    if (s.contains("<title>登录</title>")) {
+                        Log.d(TAG, "登录态失效");
+                    } else {
+                        Log.d(TAG, "InitCookie Successful");
+                    }
                     mView.hideLoading();
                 }, this::showError);
         dkInfos = mModel.getInfoFromJson();
@@ -49,7 +53,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
         postDataMap.put("room", "");
         postDataMap.put("floorid", "");
         postDataMap.put("floor", "");
-        postDataMap.put("area", "");
+        postDataMap.put("areaid", "");
         postDataMap.put("areaname", "");
         postDataMap.put("buildingid", "");
         postDataMap.put("building", "");
@@ -85,7 +89,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                 .filter(info -> info.getName().equals(name))
                 .findFirst();
         o.ifPresent(info -> {
-            postDataMap.put("area", info.getId());
+            postDataMap.put("areaid", info.getId());
             postDataMap.put("areaname", info.getName());
             Log.d(TAG, "onXQSelect DFInfo ==> name:" + info.getName());
             if (info.getNext() == 1) {
@@ -154,10 +158,12 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     @Override
     public void checkElec(String room) {
         postDataMap.put("room", room);
+        postDataMap.put("roomid", room);
         Disposable d = mModel.queryElec(postDataMap)
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .subscribe(s -> {
                     Log.d(TAG, s);
+                    mView.setElecText(s);
                     mView.hideLoading();
                 }, this::showError);
         mCDisposable.add(d);
@@ -165,7 +171,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
 
     private void showError(Throwable throwable) {
         throwable.printStackTrace();
-        mView.showMessage(throwable.getCause().toString());
+        mView.showMessage(throwable.getMessage());
         mView.hideLoading();
     }
 
@@ -173,5 +179,20 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
         return info.getData().stream()
                 .flatMap((Function<DFInfo, Stream<String>>) info1 -> Stream.of(info1.getName()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void pay() {
+        String price = mView.getPriceTv().getText().toString();
+        try {
+            price = String.valueOf((Integer.valueOf(price) * 100));
+            Disposable d = mModel.elecPay(postDataMap, price)
+                    .subscribe(s -> {
+                        mView.showMessage(s);
+                    }, this::showError);
+            mCDisposable.add(d);
+        } catch (Exception e) {
+            mView.showMessage("请输入正确的金额");
+        }
     }
 }

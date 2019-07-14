@@ -3,6 +3,7 @@ package com.fafu.app.dfb.mvp.main;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -28,6 +29,8 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
 
     private EditText roomEt;
     private TextView elecTv;
+    private EditText priceEt;
+    private Button payBtn;
 
     private OptionsPickerView<String> xqOpv;
     private OptionsPickerView<String> ldOpv;
@@ -51,8 +54,11 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
         lcTv.setOnClickListener(this);
 
         roomEt = findViewById(R.id.roomET);
+        priceEt = findViewById(R.id.priceET);
         elecTv = findViewById(R.id.elecTV);
+        payBtn = findViewById(R.id.payBtn);
         elecTv.setOnClickListener(this);
+        payBtn.setOnClickListener(this);
 
         xqOpv =
                 new OptionsPickerBuilder(this, (options1, options2, options3, v) -> {
@@ -142,12 +148,16 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
         roomEt.setText("");
         elecTv.setVisibility(View.GONE);
         elecTv.setText("");
+        priceEt.setVisibility(View.GONE);
+        priceEt.setText("");
+        payBtn.setVisibility(View.GONE);
     }
 
     @Override
     public void setElecText(String text) {
         elecTv.setText(text);
     }
+
 
     @Override
     public void onClick(View v) {
@@ -163,6 +173,11 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 break;
             case R.id.elecTV:
                 mPresenter.checkElec(roomEt.getText().toString());
+                priceEt.setVisibility(View.VISIBLE);
+                payBtn.setVisibility(View.VISIBLE);
+                break;
+            case R.id.payBtn:
+                mPresenter.pay();
                 break;
         }
     }
@@ -181,5 +196,10 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     @Override
     public void hideLoading() {
         progress.cancel();
+    }
+
+    @Override
+    public EditText getPriceTv() {
+        return priceEt;
     }
 }

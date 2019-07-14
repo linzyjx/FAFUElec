@@ -1,5 +1,7 @@
 package com.fafu.app.dfb.mvp.main;
 
+import android.widget.EditText;
+
 import com.fafu.app.dfb.data.DFInfo;
 import com.fafu.app.dfb.mvp.base.i.IModel;
 import com.fafu.app.dfb.mvp.base.i.IPresenter;
@@ -20,6 +22,8 @@ public class MainContract {
         void showElecCheckView();
 
         void clearViewData();
+
+        EditText getPriceTv();
     }
 
     interface Presenter extends IPresenter {
@@ -36,6 +40,8 @@ public class MainContract {
         void onDKSelect(int option);
 
         void checkElec(String room);
+
+        void pay();
     }
 
     interface Model extends IModel {
@@ -58,6 +64,8 @@ public class MainContract {
         List<DFInfo> getInfoFromJson();
 
         Observable<String> queryElec(Map<String, String> dataMap);
+
+        Observable<String> elecPay(Map<String, String> dataMap, String price);
     }
 
 }
