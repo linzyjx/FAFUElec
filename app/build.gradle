@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    buildToolsVersion = '28.0.3'
     defaultConfig {
-        applicationId "com.fafu.app.dfb"
+        applicationId 'com.fafu.app.dfb'
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }

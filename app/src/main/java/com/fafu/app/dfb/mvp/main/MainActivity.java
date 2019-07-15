@@ -1,15 +1,17 @@
 package com.fafu.app.dfb.mvp.main;
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
 import com.bigkoo.pickerview.view.OptionsPickerView;
@@ -20,7 +22,8 @@ import com.fafu.app.dfb.view.ProgressDialog;
 import java.util.List;
 
 public class MainActivity extends BaseActivity<MainContract.Presenter>
-        implements MainContract.View, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
+        implements MainContract.View, View.OnClickListener, RadioGroup.OnCheckedChangeListener,
+        DialogInterface.OnClickListener {
 
     private ProgressDialog progress;
 
@@ -28,8 +31,10 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     private TextView ldTv;
     private TextView lcTv;
 
-    private TextView balanceTv;
     private TextView elecTv;
+    private TextView snoTv;
+
+    private TextView balanceTv;
     private EditText priceEt;
     private EditText roomEt;
     private Button payBtn;
@@ -41,6 +46,8 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     private List<String> xqData;
     private List<String> ldData;
     private List<String> lcData;
+
+    private AlertDialog confirmDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,21 +62,26 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
         lcTv = findViewById(R.id.lcTV);
         lcTv.setOnClickListener(this);
 
+        snoTv = findViewById(R.id.accountTV);
+        TextView quitOutTv = findViewById(R.id.quitTV);
+        quitOutTv.setOnClickListener(this);
+
         balanceTv = findViewById(R.id.balanceTV);
+        ImageView balanceBtn = findViewById(R.id.balanceBtn);
+        balanceBtn.setOnClickListener(this);
+
         roomEt = findViewById(R.id.roomET);
         priceEt = findViewById(R.id.priceET);
         elecTv = findViewById(R.id.elecTV);
         payBtn = findViewById(R.id.payBtn);
         elecTv.setOnClickListener(this);
         payBtn.setOnClickListener(this);
-        ImageButton balanceBtn = findViewById(R.id.balanceBtn);
-        balanceBtn.setOnClickListener(this);
         RadioGroup rg = findViewById(R.id.radioGroup);
         rg.setOnCheckedChangeListener(this);
 
         xqOpv = new OptionsPickerBuilder(this,
                 (options1, options2, options3, v) -> {
-                    mPresenter.onXQSelect(xqData.get(options1));
+                    mPresenter.onAreaSelect(xqData.get(options1));
                     xqTv.setText(xqData.get(options1));
                 })
                 .setSubmitText("确认")
@@ -82,7 +94,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
 
         ldOpv = new OptionsPickerBuilder(this,
                 (options1, options2, options3, v) -> {
-                    mPresenter.onLDSelect(ldData.get(options1));
+                    mPresenter.onBuildingSelect(ldData.get(options1));
                     ldTv.setText(ldData.get(options1));
                 })
                 .setSubmitText("确认")
@@ -105,6 +117,12 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 .setSelectOptions(0)
                 .setOutSideCancelable(false)
                 .build();
+
+        confirmDialog = new AlertDialog.Builder(this)
+                .setMessage(R.string.confirm_pay)
+                .setPositiveButton("确认", this)
+                .setNegativeButton("取消", this)
+                .create();
 
         initViewVisibility();
         mPresenter = new MainPresenter(this);
@@ -129,6 +147,14 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
             lcData = list;
             lcOpv.setPicker(list);
         }
+    }
+
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+        if (which == AlertDialog.BUTTON_POSITIVE) {
+            mPresenter.pay();
+        }
+        dialog.cancel();
     }
 
     @Override
@@ -175,6 +201,12 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.quitTV:
+                mPresenter.quit();
+                break;
+            case R.id.balanceBtn:
+                mPresenter.queryBalance();
+                break;
             case R.id.xqTV:
                 xqOpv.show();
                 break;
@@ -185,15 +217,17 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 lcOpv.show();
                 break;
             case R.id.elecTV:
-                mPresenter.checkElecFees(roomEt.getText().toString());
+                mPresenter.queryElecFees();
                 break;
             case R.id.payBtn:
-                mPresenter.pay();
-                break;
-            case R.id.balanceBtn:
-                mPresenter.balance();
+                mPresenter.whetherPay();
                 break;
         }
+    }
+
+    @Override
+    public void setSnoText(String text) {
+        snoTv.setText(text);
     }
 
     @Override
@@ -205,6 +239,11 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     public void showPayView() {
         priceEt.setVisibility(View.VISIBLE);
         payBtn.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showConfirmDialog() {
+        confirmDialog.show();
     }
 
     @Override
@@ -221,5 +260,10 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     @Override
     public EditText getPriceET() {
         return priceEt;
+    }
+
+    @Override
+    public EditText getRoomET() {
+        return roomEt;
     }
 }

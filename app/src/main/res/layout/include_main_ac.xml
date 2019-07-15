@@ -2,8 +2,8 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
     android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp">
 
     <RelativeLayout
@@ -12,22 +12,22 @@
         android:padding="8dp">
 
         <TextView
-            android:id="@+id/balanceTV"
+            android:id="@+id/accountTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="end"
             android:layout_centerInParent="true"
-            android:text="@string/querying"/>
+            android:text="@string/loading"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
 
-        <ImageView
-            android:id="@+id/balanceBtn"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:padding="4dp"
-            android:layout_marginStart="16dp"
-            android:layout_centerVertical="true"
+        <TextView
+            android:id="@+id/quitTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:src="@drawable/ic_refresh"/>
+            android:layout_centerVertical="true"
+            android:text="@string/quit_account"
+            android:textColor="@color/blue" />
 
     </RelativeLayout>
 

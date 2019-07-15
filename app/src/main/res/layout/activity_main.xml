@@ -3,10 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:gravity="center_horizontal"
+    android:orientation="vertical"
     android:paddingTop="32dp"
-    tools:context=".mvp.main.MainActivity">
+    android:clickable="true"
+    tools:context=".mvp.main.MainActivity"
+    android:focusable="true">
+
+    <include layout="@layout/include_main_ac" />
 
     <include layout="@layout/include_main_balance" />
 

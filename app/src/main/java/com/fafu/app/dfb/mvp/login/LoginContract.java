@@ -44,9 +44,9 @@ class LoginContract {
         Observable<String> login(String sno, String password, String verify);
 
         /**
-         * 保存用户信息
+         * 保存用户信息和RescouseTypeCookie
          */
-        void save(UserMe user);
+        void save(UserMe user, String rescouseType);
     }
 
     interface Presenter extends IPresenter {

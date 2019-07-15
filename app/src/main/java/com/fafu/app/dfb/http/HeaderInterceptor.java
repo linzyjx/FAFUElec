@@ -19,8 +19,8 @@ public class HeaderInterceptor implements Interceptor {
                 .newBuilder()
                 .addHeader("Prama", "no-cache")
                 .addHeader("Cache-Control", "no-cache");
-        if (SPUtils.get("Cookie").contain("User-Agent")) {
-            builder.addHeader("User-Agent", SPUtils.get("Cookie").getString("User-Agent"));
+        if (SPUtils.get("Const").contain("User-Agent")) {
+            builder.addHeader("User-Agent", SPUtils.get("Const").getString("User-Agent"));
         }
         return chain.proceed(builder.build());
     }

@@ -11,6 +11,9 @@
     <string name="query_elec">点击查询电费</string>
     <string name="input_price">输入充值金额</string>
     <string name="confirm">确认缴费</string>
+    <string name="loading">加载中</string>
     <string name="querying">查询中</string>
     <string name="balance">余额：%s元</string>
+    <string name="confirm_pay">确认要缴费吗</string>
+    <string name="quit_account">退出账号</string>
 </resources>

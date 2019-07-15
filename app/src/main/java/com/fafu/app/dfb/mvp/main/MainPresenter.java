@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.fafu.app.dfb.data.DFInfo;
+import com.fafu.app.dfb.data.QueryData;
 import com.fafu.app.dfb.mvp.base.BasePresenter;
 import com.fafu.app.dfb.mvp.login.LoginActivity;
 
@@ -12,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,7 +31,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     private DFInfo lcInfos;
 
     private final List<DFInfo> dkInfos = mModel.getInfoFromJson();
-    private final Map<String, String> postDataMap = new HashMap<>();
+    private final QueryData queryData = new QueryData();
 
     MainPresenter(MainContract.View view) {
         super(view, new MainModel(view.getContext()));
@@ -41,6 +41,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     @Override
     public void onStart() {
         super.onStart();
+        mView.setSnoText(mModel.getSno());
         mCompDisposable.add(mModel.initCookie()
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .doFinally(() -> mView.hideLoading())
@@ -50,41 +51,31 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                         mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
                         mView.killSelf();
                     } else {
+                        queryData.setAccount(mModel.getAccount());
+                        mView.setSnoText(mModel.getSno());
                         balance(false);
                         Log.d(TAG, "InitCookie Successful");
                     }
                 }, this::showError)
         );
-        initPostDataMap();
-    }
-
-    private void initPostDataMap() {
-        postDataMap.put("aid", "");
-        postDataMap.put("roomid", "");
-        postDataMap.put("room", "");
-        postDataMap.put("floorid", "");
-        postDataMap.put("floor", "");
-        postDataMap.put("areaid", "");
-        postDataMap.put("areaname", "");
-        postDataMap.put("buildingid", "");
-        postDataMap.put("building", "");
+        queryData.clear();
     }
 
     @Override
     public void onDKSelect(int option) {
-        initPostDataMap();
+        queryData.clear();
         mView.initViewVisibility();
         Optional<DFInfo> o = dkInfos.stream()
-                .filter(info -> info.getId().equals(aids[option-1]))
+                .filter(info -> info.getId().equals(aids[option - 1]))
                 .findFirst();
         o.ifPresent(info -> {
-            postDataMap.put("aid", aids[option-1]);
+            queryData.setAid(aids[option - 1]);
             xqInfos = info;
             Log.d(TAG, "onDKSelect DFInfo ==> name:" + info.getName());
             if (info.getNext() == 1) {
                 xqInfos = info;
                 mView.setSelectorView(1, getNames(info));
-            } else if (info.getNext() == 2){
+            } else if (info.getNext() == 2) {
                 ldInfos = info;
                 mView.setSelectorView(2, getNames(info));
             } else if (info.getNext() == 3) {
@@ -95,18 +86,18 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     }
 
     @Override
-    public void onXQSelect(String name) {
+    public void onAreaSelect(String name) {
         Optional<DFInfo> o = xqInfos.getData().stream()
                 .filter(info -> info.getName().equals(name))
                 .findFirst();
         o.ifPresent(info -> {
-            postDataMap.put("areaid", info.getId());
-            postDataMap.put("areaname", info.getName());
-            Log.d(TAG, "onXQSelect DFInfo ==> name:" + info.getName());
+            queryData.setAreaId(info.getId());
+            queryData.setArea(info.getName());
+            Log.d(TAG, "onAreaSelect DFInfo ==> name:" + info.getName());
             if (info.getNext() == 1) {
                 xqInfos = info;
                 mView.setSelectorView(1, getNames(info));
-            } else if (info.getNext() == 2){
+            } else if (info.getNext() == 2) {
                 ldInfos = info;
                 mView.setSelectorView(2, getNames(info));
             } else if (info.getNext() == 3) {
@@ -119,18 +110,25 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     }
 
     @Override
-    public void onLDSelect(String name) {
+    public void quit() {
+        mModel.clearAll();
+        mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
+        mView.killSelf();
+    }
+
+    @Override
+    public void onBuildingSelect(String name) {
         Optional<DFInfo> o = ldInfos.getData().stream()
                 .filter(info -> info.getName().equals(name))
                 .findFirst();
         o.ifPresent(info -> {
-            postDataMap.put("buildingid", info.getId());
-            postDataMap.put("building", info.getName());
-            Log.d(TAG, "onLDSelect DFInfo ==> name:" + info.getName());
+            queryData.setBuildingId(info.getId());
+            queryData.setBuilding(info.getName());
+            Log.d(TAG, "onBuildingSelect DFInfo ==> name:" + info.getName());
             if (info.getNext() == 1) {
                 xqInfos = info;
                 mView.setSelectorView(1, getNames(info));
-            } else if (info.getNext() == 2){
+            } else if (info.getNext() == 2) {
                 ldInfos = info;
                 mView.setSelectorView(2, getNames(info));
             } else if (info.getNext() == 3) {
@@ -148,13 +146,13 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                 .filter(info -> info.getName().equals(name))
                 .findFirst();
         o.ifPresent(info -> {
-            postDataMap.put("floorid", info.getId());
-            postDataMap.put("floor", info.getName());
+            queryData.setFloorId(info.getId());
+            queryData.setFloor(info.getName());
             Log.d(TAG, "onLCSelect DFInfo ==> name:" + info.getName());
             if (info.getNext() == 1) {
                 xqInfos = info;
                 mView.setSelectorView(1, getNames(info));
-            } else if (info.getNext() == 2){
+            } else if (info.getNext() == 2) {
                 ldInfos = info;
                 mView.setSelectorView(2, getNames(info));
             } else if (info.getNext() == 3) {
@@ -167,15 +165,13 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     }
 
     @Override
-    public void balance() {
+    public void queryBalance() {
         balance(true);
     }
 
     @SuppressLint("DefaultLocale")
     private void balance(boolean toast) {
-        int delay = toast ? 250 : 0;
         mCompDisposable.add(mModel.queryBalance()
-                .delaySubscription(delay, TimeUnit.MILLISECONDS)
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .doFinally(() -> mView.hideLoading())
                 .subscribe(balance -> {
@@ -189,10 +185,14 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     }
 
     @Override
-    public void checkElecFees(String room) {
-        postDataMap.put("room", room);
-        postDataMap.put("roomid", room);
-        Disposable d = mModel.queryElec(postDataMap)
+    public void queryElecFees() {
+        String room = mView.getRoomET().getText().toString();
+        if (room.isEmpty()) {
+            mView.showMessage("请输入正确的宿舍号");
+            return;
+        }
+        queryData.setRoom(room);
+        Disposable d = mModel.queryElec(queryData)
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .doFinally(() -> mView.hideLoading())
                 .subscribe(s -> {
@@ -219,11 +219,24 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     }
 
     @Override
-    public void pay() {
+    public void whetherPay() {
         String price = mView.getPriceET().getText().toString();
+        if (price.isEmpty()) {
+            mView.showMessage("请输入正确的金额");
+            return;
+        }
+        mView.showConfirmDialog();
+    }
+
+    @Override
+    public void pay() {
         try {
-            price = String.valueOf((Integer.valueOf(price) * 100));
-            mCompDisposable.add(mModel.elecPay(postDataMap, price)
+            int price = Integer.valueOf(mView.getPriceET().getText().toString()) * 100;
+            if (price <= 0) {
+                mView.showMessage("请输入正确的金额");
+                return;
+            }
+            mCompDisposable.add(mModel.elecPay(queryData, String.valueOf(price))
                     .subscribe(s -> {
                         mView.showMessage(s);
                         balance(false);

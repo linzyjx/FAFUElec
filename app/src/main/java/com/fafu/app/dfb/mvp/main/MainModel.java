@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fafu.app.dfb.data.DFInfo;
+import com.fafu.app.dfb.data.QueryData;
 import com.fafu.app.dfb.http.MainService;
 import com.fafu.app.dfb.http.RetrofitFactory;
 import com.fafu.app.dfb.mvp.base.BaseModel;
@@ -39,12 +40,17 @@ public class MainModel extends BaseModel implements MainContract.Model {
                     "31", "3", "2", "", "electricity",
                     URLEncoder.encode("交电费", "gbk"),
                     SPUtils.get("Cookie").getString("sourcetypeticket"),
-                    StringUtils.imei(),
+                    SPUtils.get("Const").getString("IMEI"),
                     "0", "1"
             ).execute().body();
             emitter.onNext(responseBody.string());
             emitter.onComplete();
         });
+    }
+
+    @Override
+    public String getAccount() {
+        return SPUtils.get("UserInfo").getString("account");
     }
 
     @Override
@@ -71,10 +77,8 @@ public class MainModel extends BaseModel implements MainContract.Model {
         return RxJavaUtils.create(emitter -> {
             ResponseBody responseBody = service.query(
                     String.format(
-                            "{ \"query_appinfo\": { " +
-                                    "\"aid\": \"" + aid + "\", " +
-                                    "\"account\": \"%s\" } }",
-                            SPUtils.get("UserInfo").getString("account")
+                            "{\"query_appinfo\":{\"aid\":\"%s\",\"account\":\"%s\" }}",
+                            aid, SPUtils.get("UserInfo").getString("account")
                     ),
                     "synjones.onecard.query.appinfo",
                     "true"
@@ -85,24 +89,10 @@ public class MainModel extends BaseModel implements MainContract.Model {
     }
 
     @Override
-    public Observable<String> queryElec(Map<String, String> dataMap) {
+    public Observable<String> queryElec(QueryData data) {
         return RxJavaUtils.create(emitter -> {
             ResponseBody responseBody = service.query(
-                    String.format(
-                            "{ \"query_elec_roominfo\": { " +
-                                    "\"aid\":\"%s\", " +
-                                    "\"account\": \"%s\"," +
-                                    "\"room\": { \"roomid\": \"%s\", \"room\": \"%s\" },  " +
-                                    "\"floor\": { \"floorid\": \"%s\", \"floor\": \"%s\" }, " +
-                                    "\"area\": { \"area\": \"%s\", \"areaname\": \"%s\" }, " +
-                                    "\"building\": { \"buildingid\": \"%s\", \"building\": \"%s\" } } }",
-                            dataMap.get("aid"),
-                            SPUtils.get("UserInfo").getString("account"),
-                            dataMap.get("room"), dataMap.get("room"),
-                            dataMap.get("floorid"), dataMap.get("floor"),
-                            dataMap.get("areaname"), dataMap.get("areaid"),
-                            dataMap.get("buildingid"), dataMap.get("building")
-                    ),
+                    "{\"query_elec_roominfo\":" + data.toJsonString() + "}",
                     "synjones.onecard.query.elec.roominfo",
                     "true"
             ).execute().body();
@@ -116,15 +106,15 @@ public class MainModel extends BaseModel implements MainContract.Model {
     }
 
     @Override
-    public Observable<String> elecPay(Map<String, String> dataMap, String price) {
+    public Observable<String> elecPay(QueryData data, String price) {
         return RxJavaUtils.create(emitter -> {
             ResponseBody responseBody = service.elecPay(
                     "http://cardapp.fafu.edu.cn:8088/PPage/ComePage",
-                    "###", "1", dataMap.get("aid"),
-                    SPUtils.get("UserInfo").getString("account"), price,
-                    dataMap.get("roomid"), dataMap.get("room"), dataMap.get("floorid"),
-                    dataMap.get("floor"), dataMap.get("buildingid"), dataMap.get("building"),
-                    dataMap.get("areaid"), dataMap.get("areaname"), "true"
+                    "###", "1", data.getAid(),
+                    data.getAccount(), price, data.getRoom(), data.getRoom(),
+                    data.getFloorId(), data.getFloor(),
+                    data.getBuildingId(), data.getBuilding(),
+                    data.getAreaId(), data.getArea(), "true"
             ).execute().body();
             String msg = JSONObject.parseObject(responseBody.string())
                     .getJSONObject("Msg")
@@ -169,5 +159,14 @@ public class MainModel extends BaseModel implements MainContract.Model {
         });
     }
 
+    @Override
+    public String getSno() {
+        return SPUtils.get("UserInfo").getString("sno");
+    }
 
+    @Override
+    public void clearAll() {
+        SPUtils.get("UserInfo").clear();
+        SPUtils.get("Cookie").clear();
+    }
 }

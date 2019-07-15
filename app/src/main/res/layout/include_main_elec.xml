@@ -2,16 +2,16 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
     android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
-        android:padding="8dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="8dp">
 
         <RadioGroup
             android:id="@+id/radioGroup"
@@ -78,15 +78,17 @@
             android:layout_height="40dp"
             android:layout_marginTop="4dp"
             android:gravity="center"
-            android:hint="@string/input_room" />
+            android:hint="@string/input_room"
+            android:singleLine="true" />
 
         <TextView
             android:id="@+id/elecTV"
             android:layout_width="240dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:gravity="center"
-            android:hint="@string/query_elec" />
+            android:hint="@string/query_elec"
+            android:minHeight="40dp" />
 
         <EditText
             android:id="@+id/priceET"
@@ -94,7 +96,9 @@
             android:layout_height="40dp"
             android:layout_marginTop="4dp"
             android:gravity="center"
-            android:hint="@string/input_price" />
+            android:hint="@string/input_price"
+            android:inputType="number"
+            android:singleLine="true" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/payBtn"

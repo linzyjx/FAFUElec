@@ -8,7 +8,7 @@
     <ImageView
         android:layout_width="108dp"
         android:layout_height="108dp"
-        android:background="@drawable/ic_launcher_foreground"/>
+        android:background="@drawable/ic_launcher_foreground" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/accountET"

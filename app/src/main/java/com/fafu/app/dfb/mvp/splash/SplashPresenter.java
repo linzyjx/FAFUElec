@@ -34,17 +34,16 @@ public class SplashPresenter extends BasePresenter<SplashContract.View, IModel>
                     emitter.onComplete();
                 }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doFinally( () -> mView.killSelf())
                 .subscribe(b -> {
                     if (b) {
                         mView.openActivity(new Intent(mView.getContext(), MainActivity.class));
                     } else {
                         mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
                     }
-                    mView.killSelf();
                 }, throwable -> {
                     onError(throwable);
                     mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
-                    mView.killSelf();
                 });
     }
 
@@ -53,10 +52,14 @@ public class SplashPresenter extends BasePresenter<SplashContract.View, IModel>
         if (!b) {
             SPUtils.get("Cookie").clear();
             SPUtils.get("UserInfo").clear();
-            Log.d("SplashActivity", "IMEI ==> " + StringUtils.imei());
-            Log.d("SplashActivity", "User-Agent ==> " + StringUtils.getUserAgent());
-            SPUtils.get("Cookie").putString("IMEI", StringUtils.imei());
-            SPUtils.get("Cookie").putString("User-Agent", StringUtils.getUserAgent());
+        }
+        Log.d("SplashActivity", "IMEI ==> " + StringUtils.imei());
+        Log.d("SplashActivity", "User-Agent ==> " + StringUtils.getUserAgent());
+        if (!SPUtils.get("Const").contain("IMEI")) {
+            SPUtils.get("Const").putString("IMEI", StringUtils.imei());
+        }
+        if (!SPUtils.get("Const").contain("User-Agent")) {
+            SPUtils.get("Const").putString("User-Agent", StringUtils.getUserAgent());
         }
         return b;
     }

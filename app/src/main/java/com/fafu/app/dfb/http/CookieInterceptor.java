@@ -20,7 +20,9 @@ public class CookieInterceptor implements Interceptor {
     public Response intercept(@NonNull Chain chain) throws IOException {
         Request.Builder builder = chain.request().newBuilder();
         String cookie = CookieUtils.getCookie();
-        builder.addHeader("Cookie", cookie);
+        if (!cookie.isEmpty()) {
+            builder.addHeader("Cookie", cookie);
+        }
         Response response = chain.proceed(builder.build());
         if (!response.headers("Set-Cookie").isEmpty()) {
             for (String header: response.headers("Set-Cookie")) {

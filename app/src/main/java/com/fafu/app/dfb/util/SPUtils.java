@@ -6,6 +6,8 @@ import android.content.res.Resources;
 
 import androidx.collection.SimpleArrayMap;
 
+import com.fafu.app.dfb.FAFUElec;
+
 import java.util.Set;
 
 public class SPUtils {
@@ -23,7 +25,7 @@ public class SPUtils {
 
     public static SPUtils get(String fileName) {
         if (!map.containsKey(fileName)) {
-            throw new Resources.NotFoundException("Can not find the SharedPreferences named " + fileName);
+            map.put(fileName, new SPUtils(FAFUElec.getContext(), fileName));
         }
         return map.get(fileName);
     }

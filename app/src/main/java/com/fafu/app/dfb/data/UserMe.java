@@ -8,8 +8,6 @@ public class UserMe {
 
     private String name;
 
-    private String rescouseType;
-
     private String account;
 
     public String getSno() {
@@ -34,14 +32,6 @@ public class UserMe {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getRescouseType() {
-        return rescouseType;
-    }
-
-    public void setRescouseType(String rescouseType) {
-        this.rescouseType = rescouseType;
     }
 
     public String getAccount() {

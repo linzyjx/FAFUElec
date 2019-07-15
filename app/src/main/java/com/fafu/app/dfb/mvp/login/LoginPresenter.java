@@ -13,6 +13,11 @@ public class LoginPresenter extends BasePresenter<LoginContract.View, LoginContr
 
     LoginPresenter(LoginContract.View view) {
         super(view, new LoginModel());
+        onStart();
+    }
+
+    @Override
+    public void onStart() {
         UserMe user = mModel.getUserMe();
         if (user != null) {
             mView.setSnoEtText(user.getSno());
@@ -46,8 +51,7 @@ public class LoginPresenter extends BasePresenter<LoginContract.View, LoginContr
                         user.setSno(obj2.getString("SNO"));
                         user.setName(obj2.getString("NAME"));
                         user.setPassword(password);
-                        user.setRescouseType(obj2.getString("RescouseType"));
-                        mModel.save(user);
+                        mModel.save(user, obj2.getString("RescouseType"));
                         mView.openActivity(new Intent(mView.getContext(), MainActivity.class));
                         mView.killSelf();
                     } else {

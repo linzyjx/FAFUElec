@@ -3,6 +3,7 @@ package com.fafu.app.dfb.mvp.main;
 import android.widget.EditText;
 
 import com.fafu.app.dfb.data.DFInfo;
+import com.fafu.app.dfb.data.QueryData;
 import com.fafu.app.dfb.mvp.base.i.IModel;
 import com.fafu.app.dfb.mvp.base.i.IPresenter;
 import com.fafu.app.dfb.mvp.base.i.IView;
@@ -16,6 +17,8 @@ class MainContract {
 
     interface View extends IView {
 
+        void setSnoText(String text);
+
         void setElecText(String text);
 
         void setSelectorView(int i, List<String> list);
@@ -28,20 +31,27 @@ class MainContract {
 
         void initViewVisibility();
 
+        void showConfirmDialog();
+
         EditText getPriceET();
+
+        EditText getRoomET();
     }
 
     interface Presenter extends IPresenter {
-        void onXQSelect(String name);
 
-        void onLDSelect(String name);
+        void quit();
+
+        void onAreaSelect(String name);
+
+        void onBuildingSelect(String name);
 
         void onLCSelect(String name);
 
         /**
          * 查询余额
          */
-        void balance();
+        void queryBalance();
 
         /**
          * 1 -> 常工电子电控,
@@ -51,12 +61,36 @@ class MainContract {
          */
         void onDKSelect(int option);
 
-        void checkElecFees(String room);
+        void queryElecFees();
 
+        /**
+         * 充值前弹窗
+         */
+        void whetherPay();
+
+        /**
+         * 确认充值
+         */
         void pay();
+
     }
 
     interface Model extends IModel {
+
+        /**
+         * 清除所有数据
+         */
+        void clearAll();
+
+        /**
+         * 获取当前账号的学号
+         */
+        String getSno();
+
+        /**
+         * 获取当前账号
+         */
+        String getAccount();
 
         /**
          * 初始化Cookie
@@ -77,9 +111,9 @@ class MainContract {
 
         Observable<Double> queryBalance();
 
-        Observable<String> queryElec(Map<String, String> dataMap);
+        Observable<String> queryElec(QueryData data);
 
-        Observable<String> elecPay(Map<String, String> dataMap, String price);
+        Observable<String> elecPay(QueryData data, String price);
     }
 
 }
