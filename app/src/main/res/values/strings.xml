@@ -13,7 +13,13 @@
     <string name="confirm">确认缴费</string>
     <string name="loading">加载中</string>
     <string name="querying">查询中</string>
-    <string name="balance">余额：%s元</string>
+    <string name="balance">校园卡余额：%s元</string>
     <string name="confirm_pay">确认要缴费吗</string>
     <string name="quit_account">退出账号</string>
+    <string name="hint_sno">学号</string>
+    <string name="hint_password">密码</string>
+    <string name="hint_verify">验证码</string>
+
+    <string name="login">登录</string>
+    <string name="quick_elec">一键查询电费</string>
 </resources>
