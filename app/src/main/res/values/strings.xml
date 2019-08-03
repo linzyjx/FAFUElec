@@ -24,5 +24,7 @@
     <string name="login">登录</string>
     <string name="quick_elec">一键查询电费</string>
 
-    <string name="announce">Faster、Stronger、Smaller\n基于学付宝APP的电费充值，仅供学习交流使用\n充值前请确认信息，充值记录可在学付宝的账单中查询\nGitHub:https://github.com/Woolsen/FAFUElec\nBy:Woolsen(雾深)</string>
+    <string name="announce">Faster、Stronger、Smaller\n基于学付宝APP的电费充值，仅供学习交流！！\n如有问题请致电扣扣：27907670（Woolsen（雾深））\nGitHub:https://github.com/Woolsen/FAFUElec</string>
+
+    <string name="ps">Tip: 部分宿舍电费查询显示的宿舍信息与输入宿舍号不同，\n此为学付宝问题，拒绝背锅，可用学付宝查询验证</string>
 </resources>

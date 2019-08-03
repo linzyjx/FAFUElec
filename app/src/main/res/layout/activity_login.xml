@@ -66,8 +66,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_gravity="bottom"
         android:text="@string/announce"
+        android:autoLink="web"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/ps"
         android:autoLink="web"/>
 
 </LinearLayout>
