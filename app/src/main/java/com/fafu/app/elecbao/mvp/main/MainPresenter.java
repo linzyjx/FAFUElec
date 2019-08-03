@@ -1,61 +1,52 @@
 package com.fafu.app.elecbao.mvp.main;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.util.Log;
 
-import com.fafu.app.elecbao.data.DFInfo;
 import com.fafu.app.elecbao.data.QueryData;
+import com.fafu.app.elecbao.data.Selection;
 import com.fafu.app.elecbao.mvp.base.BasePresenter;
 import com.fafu.app.elecbao.mvp.login.LoginActivity;
-import com.fafu.app.elecbao.util.RxJavaUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
 public class MainPresenter extends BasePresenter<MainContract.View, MainContract.Model>
         implements MainContract.Presenter {
 
-    private DFInfo xqInfos;
-    private DFInfo ldInfos;
-    private DFInfo lcInfos;
+    private Selection areaInfos;
+    private Selection buildingInfos;
+    private Selection floorInfos;
 
-    private final List<DFInfo> dkInfos;
-    private QueryData queryData;
+    private final List<Selection> dkInfos;
+    private QueryData userQueryData;
 
-    private Map<String, String> nameToAidMap;
+    private Map<String, String> dkNameToAidMap = new HashMap<>();
 
     MainPresenter(MainContract.View view) {
         super(view, new MainModel(view.getContext()));
-        dkInfos = mModel.getInfoFromJson();
-        queryData = new QueryData();
-        nameToAidMap = new HashMap<>();
-        onStart();
+        dkInfos = mModel.getSelectionFromJson();
     }
 
     @Override
     public void onStart() {
-        super.onStart();
-        mCompDisposable.add(RxJavaUtils.<Boolean>create(emitter -> {
-            queryData = mModel.getQueryData();
-            if (queryData == null) {
-                queryData = new QueryData();
-                emitter.onNext(false);
-            } else {
-                emitter.onNext(true);
-            }
-            emitter.onComplete();
-        }).doOnSubscribe(disposable -> mView.showLoading()
-        ).subscribe(bool -> {
-            checkLoginStatus();
-            mView.setSnoText(mModel.getSno());
-        }, this::onError));
+        // 检查登录态
+        checkLoginStatus();
+        // 查询余额
+        queryCardBalance(false);
+        // 设置学号
+        mView.setSnoText(mModel.getSno());
+        // 初始化电控
+        intiElecCtrl();
     }
 
     /**
@@ -70,10 +61,7 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
                         mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
                         mView.killSelf();
                     } else {
-                        queryData.setAccount(mModel.getAccount());
                         mView.setSnoText(mModel.getSno());
-                        // 初始化电控
-                        intiElecCtrl();
                     }
                 }, this::onError)
         );
@@ -83,87 +71,91 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
      * 初始化电控
      */
     private void intiElecCtrl() {
-        mCompDisposable.add(mModel.queryElecCtrl()
-                .doOnSubscribe(disposable -> mView.showLoading())
-                .doFinally(() -> mView.hideLoading())
+        mCompDisposable.add(mModel.queryDKInfos()
+                .doOnNext(stringStringMap -> dkNameToAidMap = stringStringMap)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(s -> {
-                    // 查询余额，放这，防止提前hideLoading
-                    balance(false);
-                    nameToAidMap = s;
-                    mView.showElecCtrlRBtn(new ArrayList<>(nameToAidMap.keySet()));
-                    if (!queryData.getRoom().isEmpty()) {
-                        //设置快捷查询电费
-                        for (Map.Entry<String, String> e : nameToAidMap.entrySet()) {
-                            if (e.getValue().equals(queryData.getAid())) {
-                                mView.setElecSelInfo(e.getKey(), queryData.getArea(), queryData.getBuilding(), queryData.getFloor());
-                                onDKSelect(e.getKey(),false);
-                                if (!queryData.getArea().isEmpty()) {
-                                    onAreaSelect(queryData.getArea());
-                                }
-                                if (!queryData.getBuilding().isEmpty()) {
-                                    onBuildingSelect(queryData.getBuilding());
-                                }
-                                if (!queryData.getFloor().isEmpty()) {
-                                    onFloorSelect(queryData.getFloor());
-                                }
-                                mView.setRoomText(queryData.getRoom());
-                                break;
-                            }
-                        }
-                    }
+                    mView.showDKSelection(dkNameToAidMap.keySet());
+                    //设置快捷查询电费
+                    quickQueryElec();
                 }, this::onError)
         );
     }
 
-    private void onDKSelect(String name, boolean isInit) {
+    //设置快捷查询电费
+    private void quickQueryElec() {
+        userQueryData = mModel.getQueryData();
+        if (userQueryData == null || userQueryData.getRoom() == null || userQueryData.getRoom().isEmpty())
+            return;
+        for (Map.Entry<String, String> e : dkNameToAidMap.entrySet()) {
+            if (e.getValue().equals(userQueryData.getAid())) {
+                mView.setSelections(e.getKey(), userQueryData.getArea(), userQueryData.getBuilding(), userQueryData.getFloor());
+                if (userQueryData.getArea() != null && !userQueryData.getArea().isEmpty()) {
+                    onAreaSelect(userQueryData.getArea());
+                }
+                if (userQueryData.getBuilding() != null && !userQueryData.getBuilding().isEmpty()) {
+                    onBuildingSelect(userQueryData.getBuilding());
+                }
+                if (userQueryData.getFloor() != null && !userQueryData.getFloor().isEmpty()) {
+                    onFloorSelect(userQueryData.getFloor());
+                }
+                mView.setRoomText(userQueryData.getRoom());
+                break;
+            }
+        }
+    }
+
+    /**
+     * @param name   电控名字
+     * @param isInit 是否初始化View和数据
+     */
+    private void onDKChecked(String name, boolean isInit) {
         // 每次重选电控时，刷新界面与数据
         if (isInit) {
-            queryData.init();
             mView.initViewVisibility();
         }
-        Optional<DFInfo> o = dkInfos.stream()
-                .filter(info -> name.equals(info.getName()))
-                .findFirst();
-        o.ifPresent(info -> {
-            queryData.setAid(nameToAidMap.get(name));
-            xqInfos = info;
-            Log.d(TAG, "onDKSelect DFInfo ==> name:" + info.getName());
-            if (info.getNext() == 1) {
-                xqInfos = info;
-                mView.setSelectorView(1, getNames(info));
-            } else if (info.getNext() == 2) {
-                ldInfos = info;
-                mView.setSelectorView(2, getNames(info));
-            } else if (info.getNext() == 3) {
-                lcInfos = info;
-                mView.setSelectorView(3, getNames(info));
+        Selection info = new Selection();
+        for (Selection i : dkInfos) {
+            if (name.equals(i.getName())) {
+                info = i;
             }
-        });
+        }
+        areaInfos = info;
+        if (info.getNext() == 1) {
+            areaInfos = info;
+            mView.setSelectorView(1, getNames(info));
+        } else if (info.getNext() == 2) {
+            buildingInfos = info;
+            mView.setSelectorView(2, getNames(info));
+        } else if (info.getNext() == 3) {
+            floorInfos = info;
+            mView.setSelectorView(3, getNames(info));
+        }
     }
 
     @Override
     public void onDKSelect(String name) {
-        //如果存在Room，则为首次查询设置check
-        onDKSelect(name, queryData.getRoom().isEmpty());
+        //如果存在Room，则设置不初始化mView
+        onDKChecked(name, true);
+//        Log.d(TAG, "onDKChecked ==> " + name);
     }
 
     @Override
     public void onAreaSelect(String name) {
-        Optional<DFInfo> o = xqInfos.getData().stream()
+        Optional<Selection> o = areaInfos.getData().stream()
                 .filter(info -> info.getName().equals(name))
                 .findFirst();
         o.ifPresent(info -> {
-            queryData.setAreaId(info.getId());
-            queryData.setArea(info.getName());
-            Log.d(TAG, "onAreaSelect DFInfo ==> name:" + info.getName());
+//            Log.d(TAG, "onAreaSelect Selection ==> name:" + info.getName());
             if (info.getNext() == 1) {
-                xqInfos = info;
+                areaInfos = info;
                 mView.setSelectorView(1, getNames(info));
             } else if (info.getNext() == 2) {
-                ldInfos = info;
+                buildingInfos = info;
                 mView.setSelectorView(2, getNames(info));
             } else if (info.getNext() == 3) {
-                lcInfos = info;
+                floorInfos = info;
                 mView.setSelectorView(3, getNames(info));
             } else {
                 mView.showElecCheckView();
@@ -172,29 +164,20 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     }
 
     @Override
-    public void quit() {
-        mModel.clearAll();
-        mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
-        mView.killSelf();
-    }
-
-    @Override
     public void onBuildingSelect(String name) {
-        Optional<DFInfo> o = ldInfos.getData().stream()
+        Optional<Selection> o = buildingInfos.getData().stream()
                 .filter(info -> info.getName().equals(name))
                 .findFirst();
         o.ifPresent(info -> {
-            queryData.setBuildingId(info.getId());
-            queryData.setBuilding(info.getName());
-            Log.d(TAG, "onBuildingSelect DFInfo ==> name:" + info.getName());
+//            Log.d(TAG, "onBuildingSelect Selection ==> name:" + info.getName());
             if (info.getNext() == 1) {
-                xqInfos = info;
+                areaInfos = info;
                 mView.setSelectorView(1, getNames(info));
             } else if (info.getNext() == 2) {
-                ldInfos = info;
+                buildingInfos = info;
                 mView.setSelectorView(2, getNames(info));
             } else if (info.getNext() == 3) {
-                lcInfos = info;
+                floorInfos = info;
                 mView.setSelectorView(3, getNames(info));
             } else {
                 mView.showElecCheckView();
@@ -204,21 +187,19 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
 
     @Override
     public void onFloorSelect(String name) {
-        Optional<DFInfo> o = lcInfos.getData().stream()
+        Optional<Selection> o = floorInfos.getData().stream()
                 .filter(info -> info.getName().equals(name))
                 .findFirst();
         o.ifPresent(info -> {
-            queryData.setFloorId(info.getId());
-            queryData.setFloor(info.getName());
-            Log.d(TAG, "onFloorSelect DFInfo ==> name:" + info.getName());
+//            Log.d(TAG, "onFloorSelect Selection ==> name:" + info.getName());
             if (info.getNext() == 1) {
-                xqInfos = info;
+                areaInfos = info;
                 mView.setSelectorView(1, getNames(info));
             } else if (info.getNext() == 2) {
-                ldInfos = info;
+                buildingInfos = info;
                 mView.setSelectorView(2, getNames(info));
             } else if (info.getNext() == 3) {
-                lcInfos = info;
+                floorInfos = info;
                 mView.setSelectorView(3, getNames(info));
             } else {
                 mView.showElecCheckView();
@@ -227,42 +208,86 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
     }
 
     @Override
-    public void queryBalance() {
-        balance(true);
+    public void queryCardBalance() {
+        queryCardBalance(true);
     }
 
-    @SuppressLint("DefaultLocale")
-    private void balance(boolean toast) {
+    /**
+     * 查询余额
+     *
+     * @param showToast 是否显示Toast
+     */
+    private void queryCardBalance(boolean showToast) {
         mCompDisposable.add(mModel.queryBalance()
+                .map(aDouble -> String.format(Locale.CHINA, "%.2f", aDouble))  // 取2位小数
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .doFinally(() -> mView.hideLoading())
                 .subscribe(balance -> {
-                    String t = String.format("%.2f", balance);
-                    mView.setBalanceText(t);
-                    if (toast) {
-                        mView.showMessage(String.format("当前账户余额：%s元", t));
+                    mView.setBalanceText(balance);
+                    if (showToast) {
+                        mView.showMessage(String.format("当前账户余额：%s元", balance));
                     }
                 }, this::onError)
         );
     }
 
     @Override
-    public void queryElecFees() {
-        String room = mView.getRoomET().getText().toString();
+    public void queryElecBalance() {
+        QueryData userQuery = new QueryData();
+        // 设置账号
+        userQuery.setAccount(mModel.getAccount());
+        //设置电控信息
+        String dkName = mView.getCheckedDKName();
+        userQuery.setAid(dkNameToAidMap.get(dkName));
+        //设置地区
+        String area = mView.getAreaText();
+        if (!area.isEmpty() && areaInfos != null) {
+            userQuery.setArea(area);
+            areaInfos.getData().forEach(areaInfo -> {
+                if (areaInfo.getName().equals(area)) {
+                    userQuery.setAreaId(areaInfo.getId());
+                }
+            });
+        }
+        //设置楼栋
+        String building = mView.getBuildingText();
+        if (!building.isEmpty() && buildingInfos != null) {
+            userQuery.setBuilding(building);
+            buildingInfos.getData().forEach(buildingInfo -> {
+                if (buildingInfo.getName().equals(building)) {
+                    userQuery.setBuildingId(buildingInfo.getId());
+                }
+            });
+        }
+        //设置楼层
+        String floor = mView.getFloorText();
+        if (!floor.isEmpty() && floorInfos != null) {
+            userQuery.setFloor(building);
+            floorInfos.getData().forEach(floorInfo -> {
+                if (floorInfo.getName().equals(floor)) {
+                    userQuery.setFloorId(floorInfo.getId());
+                }
+            });
+        }
+        //设置房间信息
+        String room = mView.getRoomText();
+        userQuery.setRoom(room);
         if (room.isEmpty()) {
             mView.showMessage("请输入正确的宿舍号");
             return;
         }
-        queryData.setRoom(room);
-        mCompDisposable.add(mModel.queryElec(queryData)
+        mCompDisposable.add(mModel.queryElec(userQuery)
                 .doOnSubscribe(disposable -> mView.showLoading())
                 .doFinally(() -> mView.hideLoading())
                 .subscribe(s -> {
-                    Log.d(TAG, s);
                     if (s.contains("无法")) {
+                        this.userQueryData = null;
                         mView.showMessage(s + "，请检查信息是否正确");
                     } else {
-                        mModel.save(queryData);
+                        this.userQueryData = userQuery;
+                        mModel.save(userQueryData);
                         mView.setElecText(s);
                         mView.showMessage("查询成功");
                         mView.showPayView();
@@ -271,50 +296,67 @@ public class MainPresenter extends BasePresenter<MainContract.View, MainContract
         );
     }
 
-    private List<String> getNames(DFInfo info) {
+    private List<String> getNames(Selection info) {
         return info.getData().stream()
-                .flatMap((Function<DFInfo, Stream<String>>) info1 -> Stream.of(info1.getName()))
+                .flatMap((Function<Selection, Stream<String>>) info1 -> Stream.of(info1.getName()))
                 .collect(Collectors.toList());
     }
 
     @Override
     public void whetherPay() {
-        String price = mView.getPriceET().getText().toString();
+        String price = mView.getPriceText();
         if (price.isEmpty()) {
             mView.showMessage("请输入正确的金额");
             return;
         }
         StringBuilder msg = new StringBuilder("请确认缴费信息：\n");
-        if (!queryData.getArea().isEmpty()) {
-            msg.append("\t\t校区：").append(queryData.getArea()).append("\n");
+        if (!userQueryData.getArea().isEmpty()) {
+            msg.append("\t\t校区：").append(userQueryData.getArea()).append("\n");
         }
-        if (!queryData.getBuilding().isEmpty()) {
-            msg.append("\t\t楼栋：").append(queryData.getBuilding()).append("\n");
+        if (!userQueryData.getBuilding().isEmpty()) {
+            msg.append("\t\t楼栋：").append(userQueryData.getBuilding()).append("\n");
         }
-        if (!queryData.getFloor().isEmpty()) {
-            msg.append("\t\t楼层").append(queryData.getFloor()).append("\n");
+        if (!userQueryData.getFloor().isEmpty()) {
+            msg.append("\t\t楼层").append(userQueryData.getFloor()).append("\n");
         }
-        msg.append("\t\t宿舍号：").append(queryData.getRoom()).append("\n");
-        msg.append("\t\t充值金额：").append(mView.getPriceET().getText().toString()).append("元");
+        msg.append("\t\t宿舍号：").append(userQueryData.getRoom()).append("\n");
+        msg.append("\t\t充值金额：").append(mView.getPriceText()).append("元");
         mView.showConfirmDialog(msg.toString());
     }
 
     @Override
     public void pay() {
-        try {
-            int price = Integer.valueOf(mView.getPriceET().getText().toString()) * 100;
-            if (price <= 0) {
-                mView.showMessage("请输入正确的金额");
-                return;
-            }
-            mCompDisposable.add(mModel.elecPay(queryData, String.valueOf(price))
-                    .subscribe(s -> {
-                        mView.showMessage(s);
-                        balance(false);
-                    }, this::onError)
-            );
-        } catch (Exception e) {
-            mView.showMessage("请输入正确的金额");
-        }
+        mCompDisposable.add(Observable
+                .<Integer>create(emitter -> {
+                    int price = Integer.valueOf(mView.getPriceText()) * 100;
+                    if (price <= 0) {
+                        throw new NumberFormatException();
+                    }
+                    emitter.onNext(price);
+                    emitter.onComplete();
+                })
+                .flatMap(integer -> mModel.elecPay(userQueryData, String.valueOf(integer)))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(disposable -> mView.showLoading())
+                .doFinally(() -> mView.hideLoading())
+                .subscribe(s -> {
+                            mView.showMessage(s);
+                            queryCardBalance(false);
+                        }, throwable -> {
+                            if (throwable instanceof NumberFormatException) {
+                                mView.showMessage("请输入正确金额");
+                            }
+                        }
+                )
+        );
     }
+
+    @Override
+    public void quit() {
+        mModel.clearAll();
+        mView.openActivity(new Intent(mView.getContext(), LoginActivity.class));
+        mView.killSelf();
+    }
+
 }

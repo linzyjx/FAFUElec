@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:paddingTop="32dp"
-    android:clickable="true"
-    tools:context=".mvp.main.MainActivity"
-    android:focusable="true">
+    tools:context=".mvp.main.MainActivity">
 
     <include layout="@layout/include_main_ac" />
 

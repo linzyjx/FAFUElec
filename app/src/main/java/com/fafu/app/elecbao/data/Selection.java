@@ -5,16 +5,16 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
-public class DFInfo {
+public class Selection {
     private String id;
     private String name;
     private int next;
-    private List<DFInfo> data;
+    private List<Selection> data;
 
-    public DFInfo() {
+    public Selection() {
     }
 
-    public DFInfo(String id, String name, int next, List<DFInfo> data) {
+    public Selection(String id, String name, int next, List<Selection> data) {
         this.id = id;
         this.name = name;
         this.next = next;
@@ -45,18 +45,18 @@ public class DFInfo {
         this.next = next;
     }
 
-    public List<DFInfo> getData() {
+    public List<Selection> getData() {
         return data;
     }
 
-    public void setData(List<DFInfo> data) {
+    public void setData(List<Selection> data) {
         this.data = data;
     }
 
     @Override
     @NonNull
     public String toString() {
-        return "DFInfo{" +
+        return "Selection{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", next=" + next +

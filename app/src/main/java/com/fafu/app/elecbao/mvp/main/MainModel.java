@@ -4,9 +4,9 @@ import android.content.Context;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.fafu.app.elecbao.data.DFInfo;
-import com.fafu.app.elecbao.data.DaoManager;
 import com.fafu.app.elecbao.data.QueryData;
+import com.fafu.app.elecbao.data.Selection;
+import com.fafu.app.elecbao.data.DaoManager;
 import com.fafu.app.elecbao.data.QueryDataDao;
 import com.fafu.app.elecbao.http.MainService;
 import com.fafu.app.elecbao.http.RetrofitFactory;
@@ -75,7 +75,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
 
     @Override
     public Observable<String> elecPay(QueryData data, String price) {
-        return RxJavaUtils.create(emitter -> {
+        return Observable.create(emitter -> {
             ResponseBody responseBody = service.elecPay(
                     "http://cardapp.fafu.edu.cn:8088/PPage/ComePage",
                     "###", "1", data.getAid(),
@@ -94,7 +94,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
     }
 
     @Override
-    public List<DFInfo> getInfoFromJson() {
+    public List<Selection> getSelectionFromJson() {
         try {
             InputStream is = context.getAssets().open("data.json");
             BufferedReader isr = new BufferedReader(new InputStreamReader(is));
@@ -103,7 +103,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
             while ((str = isr.readLine()) != null) {
                 sb.append(str);
             }
-            return JSONObject.parseArray(sb.toString(), DFInfo.class);
+            return JSONObject.parseArray(sb.toString(), Selection.class);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -111,8 +111,8 @@ public class MainModel extends BaseModel implements MainContract.Model {
     }
 
     @Override
-    public Observable<Map<String, String>> queryElecCtrl() {
-        return RxJavaUtils.create(emitter -> {
+    public Observable<Map<String, String>> queryDKInfos() {
+        return Observable.create(emitter -> {
             ResponseBody responseBody = service.query(
                     "{\"query_applist\":{ \"apptype\": \"elec\" }}",
                     "synjones.onecard.query.applist",
@@ -134,7 +134,7 @@ public class MainModel extends BaseModel implements MainContract.Model {
 
     @Override
     public Observable<Double> queryBalance() {
-        return RxJavaUtils.create(emitter -> {
+        return Observable.create(emitter -> {
             ResponseBody responseBody = service.queryBalance(
                     "true"
             ).execute().body();

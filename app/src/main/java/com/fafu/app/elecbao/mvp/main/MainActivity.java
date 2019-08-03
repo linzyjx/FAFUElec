@@ -1,10 +1,13 @@
 package com.fafu.app.elecbao.mvp.main;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.SparseArray;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -30,7 +33,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
 
     private ProgressDialog progress;
 
-    private SparseArray<String> idToNameMap;
+    private SparseArray<String> viewIdToNameMap;  //记录RadioButtonId对应的电控名字
     private RadioGroup rg;
 
     private TextView areaTv;
@@ -55,11 +58,16 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
 
     private AlertDialog confirmDialog;
 
+    private String lastRoomText = "";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        idToNameMap = new SparseArray<>();
+
+        mPresenter = new MainPresenter(this);
+
+        viewIdToNameMap = new SparseArray<>();
 
         progress = new ProgressDialog(this, "加载中");
 
@@ -132,8 +140,17 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 .setNegativeButton("取消", this)
                 .create();
 
+        roomEt.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus && !lastRoomText.equals(roomEt.getText().toString())) {
+                elecTv.setText(R.string.query_elec);
+                priceEt.setVisibility(View.GONE);
+                priceEt.setText("");
+                payBtn.setVisibility(View.GONE);
+            }
+        });
+
         initViewVisibility();
-        mPresenter = new MainPresenter(this);
+        mPresenter.onStart();
     }
 
     @Override
@@ -158,11 +175,20 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     }
 
     @Override
-    public void setElecSelInfo(String dkName, String area, String building, String floor) {
-        rg.check(idToNameMap.keyAt(idToNameMap.indexOfValue(dkName)));
-        areaTv.setText(area);
-        buildingTv.setText(building);
-        floorTv.setText(floor);
+    public void setSelections(@Nullable String dkName, @Nullable String area, @Nullable String building, @Nullable String floor) {
+        rg.check(viewIdToNameMap.keyAt(viewIdToNameMap.indexOfValue(dkName)));
+        if (area != null && !area.isEmpty()) {
+            areaTv.setText(area);
+            areaTv.setVisibility(View.VISIBLE);
+        }
+        if (building != null && !building.isEmpty()) {
+            buildingTv.setText(building);
+            buildingTv.setVisibility(View.VISIBLE);
+        }
+        if (floor != null && !floor.isEmpty()) {
+            floorTv.setText(floor);
+            floorTv.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -175,8 +201,9 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
-        if (idToNameMap.get(checkedId) != null) {
-            mPresenter.onDKSelect(idToNameMap.get(checkedId));
+//        Log.d("MainActivity", "onCheckedChanged ==> " + checkedId + "  " + viewIdToNameMap.get(checkedId));
+        if (viewIdToNameMap.get(checkedId) != null) {
+            mPresenter.onDKSelect(viewIdToNameMap.get(checkedId));
         }
     }
 
@@ -210,7 +237,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 mPresenter.quit();
                 break;
             case R.id.balanceBtn:
-                mPresenter.queryBalance();
+                mPresenter.queryCardBalance();
                 break;
             case R.id.xqTV:
                 xqOpv.show();
@@ -222,7 +249,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
                 lcOpv.show();
                 break;
             case R.id.elecTV:
-                mPresenter.queryElecFees();
+                mPresenter.queryElecBalance();
                 break;
             case R.id.payBtn:
                 mPresenter.whetherPay();
@@ -264,17 +291,7 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
     }
 
     @Override
-    public EditText getPriceET() {
-        return priceEt;
-    }
-
-    @Override
-    public EditText getRoomET() {
-        return roomEt;
-    }
-
-    @Override
-    public void showElecCtrlRBtn(Collection<String> strings) {
+    public void showDKSelection(Collection<String> strings) {
         for (String s : strings) {
             RadioButton rb1 = new RadioButton(this);
             RadioGroup.LayoutParams rgLp = new RadioGroup.LayoutParams(
@@ -285,13 +302,78 @@ public class MainActivity extends BaseActivity<MainContract.Presenter>
             rb1.append(s);
             int id = View.generateViewId();
             rb1.setId(id);
-            idToNameMap.append(id, s);
+            viewIdToNameMap.append(id, s);
             rg.addView(rb1);
         }
     }
 
     @Override
     public void setRoomText(String text) {
+        lastRoomText = text;
         roomEt.setText(text);
     }
+
+    public String getCheckedDKName() {
+        return viewIdToNameMap.get(rg.getCheckedRadioButtonId());
+    }
+
+    @Override
+    public String getAreaText() {
+        return areaTv.getText().toString();
+    }
+
+    @Override
+    public String getBuildingText() {
+        return buildingTv.getText().toString();
+    }
+
+    @Override
+    public String getFloorText() {
+        return floorTv.getText().toString();
+    }
+
+    @Override
+    public String getPriceText() {
+        return priceEt.getText().toString();
+    }
+
+    @Override
+    public String getRoomText() {
+        return roomEt.getText().toString();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (isShouldHideInput(v, ev)) {//点击editText控件外部
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    assert v != null;
+                    if (roomEt != null) {
+                        roomEt.clearFocus();
+                    }
+                }
+            }
+            return super.dispatchTouchEvent(ev);
+        }
+        // 必不可少，否则所有的组件都不会有TouchEvent了
+        return getWindow().superDispatchTouchEvent(ev) || onTouchEvent(ev);
+    }
+
+    public boolean isShouldHideInput(View v, MotionEvent event) {
+        if ((v instanceof EditText)) {
+            int[] leftTop = {0, 0};
+            //获取输入框当前的location位置
+            v.getLocationInWindow(leftTop);
+            int left = leftTop[0];
+            int top = leftTop[1];
+            int bottom = top + v.getHeight();
+            int right = left + v.getWidth();
+            return !(event.getX() > left && event.getX() < right
+                    && event.getY() > top && event.getY() < bottom);
+        }
+        return false;
+    }
+
 }

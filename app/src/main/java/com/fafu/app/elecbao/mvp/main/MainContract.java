@@ -1,9 +1,7 @@
 package com.fafu.app.elecbao.mvp.main;
 
-import android.widget.EditText;
-
-import com.fafu.app.elecbao.data.DFInfo;
 import com.fafu.app.elecbao.data.QueryData;
+import com.fafu.app.elecbao.data.Selection;
 import com.fafu.app.elecbao.mvp.base.i.IModel;
 import com.fafu.app.elecbao.mvp.base.i.IPresenter;
 import com.fafu.app.elecbao.mvp.base.i.IView;
@@ -34,24 +32,49 @@ class MainContract {
 
         void showConfirmDialog(String message);
 
-        void showElecCtrlRBtn(Collection<String> strings);
+        /**
+         * 设置电控选项
+         *
+         * @param strings 电控名字
+         */
+        void showDKSelection(Collection<String> strings);
 
         void setRoomText(String text);
 
         /**
-         * 设置电费选项信息
+         * 设置电费选项信息，用于快捷查询的view初始化设置
          */
-        void setElecSelInfo(String dkName, String area, String building, String floor);
+        void setSelections(String dkName, String area, String building, String floor);
 
         /**
-         * 获取充值金额信息EditText
+         * @return 地区名称
          */
-        EditText getPriceET();
+        String getAreaText();
 
         /**
-         * 获取宿舍号信息EditText
+         * @return 楼栋名称
          */
-        EditText getRoomET();
+        String getBuildingText();
+
+        /**
+         * @return 楼层名称
+         */
+        String getFloorText();
+
+        /**
+         * @return 充值金额
+         */
+        String getPriceText();
+
+        /**
+         * @return 宿舍号
+         */
+        String getRoomText();
+
+        /**
+         * @return 选择的电控名字
+         */
+        String getCheckedDKName();
     }
 
     interface Presenter extends IPresenter {
@@ -64,17 +87,17 @@ class MainContract {
 
         void onFloorSelect(String name);
 
-        void onDKSelect(String name);
+        void onDKSelect(String aid);
 
         /**
          * 查询余额
          */
-        void queryBalance();
+        void queryCardBalance();
 
         /**
          * 查询电费
          */
-        void queryElecFees();
+        void queryElecBalance();
 
         /**
          * 充值前弹窗
@@ -107,19 +130,21 @@ class MainContract {
 
         /**
          * 初始化Cookie
+         *
          * @return 是否重新登录
          */
         Observable<Boolean> initCookie();
 
-        List<DFInfo> getInfoFromJson();
+        List<Selection> getSelectionFromJson();
 
         Observable<Double> queryBalance();
 
         /**
          * 获取所有电控信息
-         * key: Name(电控名字) value: Aid(电控Id)
+         *
+         * @return key: Name(电控名字) value: Aid(电控Id)
          */
-        Observable<Map<String, String>> queryElecCtrl();
+        Observable<Map<String, String>> queryDKInfos();
 
         /**
          * 充值电费

@@ -19,11 +19,10 @@ import permissions.dispatcher.NeedsPermission;
 public class StringUtils {
 
     @SuppressLint({"MissingPermission", "HardwareIds"})
-    @NeedsPermission(Manifest.permission.READ_PHONE_STATE)
     public static String imei() {
         String str;
-        TelephonyManager telephonyManager = (TelephonyManager) FAFUElec.getContext().getSystemService(Context.TELEPHONY_SERVICE);
         try {
+            TelephonyManager telephonyManager = (TelephonyManager) FAFUElec.getContext().getSystemService(Context.TELEPHONY_SERVICE);
             if (telephonyManager.getDeviceId() != null) {
                 str = telephonyManager.getDeviceId();
             } else {
