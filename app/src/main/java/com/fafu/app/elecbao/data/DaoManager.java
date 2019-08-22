@@ -14,6 +14,9 @@ public class DaoManager {
 
     public static DaoManager getInstance() {
         if (INSTANCE == null) {
+            synchronized (DaoManager.class) {
+
+            }
             INSTANCE = new DaoManager(FAFUElec.getContext());
         }
         return INSTANCE;

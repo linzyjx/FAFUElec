@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId 'com.fafu.app.elecbao'
         minSdkVersion 24
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 4
         versionName "1.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

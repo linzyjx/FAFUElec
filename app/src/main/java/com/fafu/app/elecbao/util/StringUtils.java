@@ -1,6 +1,5 @@
 package com.fafu.app.elecbao.util;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
@@ -13,8 +12,6 @@ import com.fafu.app.elecbao.FAFUElec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import permissions.dispatcher.NeedsPermission;
 
 public class StringUtils {
 
